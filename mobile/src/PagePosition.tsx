@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {PanResponder, StyleSheet, View} from 'react-native';
+import {usePalette} from './controls';
 
 /** Sends bounded previews while dragging, then always sends the exact release page. */
 export function PagePosition({page, count, disabled, select}: {
@@ -36,15 +37,17 @@ export function PagePosition({page, count, disabled, select}: {
     onPanResponderRelease: release, onPanResponderTerminate: release,
     onPanResponderTerminationRequest: () => true,
   }), []);
+  const {accent} = usePalette();
   const progress = count <= 1 ? 0 : (draft - 1) / (count - 1);
   return <View testID="readerPageSlider" accessible accessibilityLabel="Page position"
     accessibilityState={{disabled: disabled || count < 2}} accessibilityValue={{min: 1, max: Math.max(1, count), now: draft, text: `Page ${draft} of ${count}`}}
     onLayout={event => {width.current = event.nativeEvent.layout.width;}} {...responder.panHandlers} style={s.hit}>
-    <View pointerEvents="none" style={s.track}><View style={{height: 4, width: `${progress * 100}%`, backgroundColor: 'white', borderRadius: 2}}/></View>
-    <View pointerEvents="none" style={[s.thumb, {left: `${progress * 100}%`}]} />
+    <View pointerEvents="none" style={s.track}><View style={[s.fill, {width: `${progress * 100}%`, backgroundColor: accent}]}/></View>
+    <View pointerEvents="none" style={[s.thumb, {left: `${progress * 100}%`, borderColor: accent}]} />
   </View>;
 }
 const s = StyleSheet.create({hit: {flex: 1, height: 48, justifyContent: 'center', marginHorizontal: 12},
-  track: {height: 4, backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 2, overflow: 'hidden'},
-  thumb: {position: 'absolute', top: 15, width: 18, height: 18, borderRadius: 9, backgroundColor: 'white', marginLeft: -9,
+  track: {height: 5, backgroundColor: 'rgba(247,236,221,0.24)', borderRadius: 2.5, overflow: 'hidden'},
+  fill: {height: 5, borderRadius: 2.5},
+  thumb: {position: 'absolute', top: 13, width: 22, height: 22, borderRadius: 11, borderWidth: 3, backgroundColor: '#FFF6EA', marginLeft: -11,
     shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 4, shadowOffset: {width: 0, height: 1}, elevation: 3}});
