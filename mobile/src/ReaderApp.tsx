@@ -9,13 +9,15 @@ import {ImportProgress, PasswordPrompt} from './ImportPresentation';
 import {Settings} from './Settings';
 import {PagePosition} from './PagePosition';
 import {useNativeLibrary} from './useNativeLibrary';
+import {PAGE_GRID_PADDING, pageGrid} from './layout';
 
 function ReaderControls() {
   const {snapshot, error, pending, dispatch, retry, dismissError} = useNativeLibrary();
   const r = snapshot?.reader;
   const ui = r?.ui;
   const [jump, setJump] = useState('');
-  const {width, fontScale} = useWindowDimensions();
+  const {width, height, fontScale} = useWindowDimensions();
+  const [gridWidth, setGridWidth] = useState(0);
   const c = usePalette();
   const sequence = useRef(0);
   const act = (action: ReaderAction, page?: number, scrubbing = false) => {
@@ -42,9 +44,12 @@ function ReaderControls() {
   const number = /^\d+$/.test(jump.trim()) ? Number(jump.trim()) : NaN;
   const valid = Number.isSafeInteger(number) && number >= 1 && number <= (ui?.count ?? 0);
   const jumpTo = () => {if (valid && !pending && !ui?.sorting) {act('seek', number); act('dismissTool');}};
-  const columns = Math.max(fontScale > 1.8 ? 1 : 2, Math.floor(Math.min(width - 40, 1100) / (80 + (snapshot?.preferences.thumbnailSize ?? 0.25) * 150)));
-  const labelHeight = Math.ceil(28 * fontScale);
-  const rowHeight = ((Math.min(width - 40, 1100) - 24) / columns - 16) / 0.7 + 16 + labelHeight;
+  const compact = width < 600;
+  const scrimPadding = compact ? 8 : 20;
+  const grid = pageGrid(gridWidth || Math.min(width - scrimPadding * 2, 1100), fontScale, snapshot?.preferences.thumbnailSize ?? 0.25);
+  const {columns, rowHeight} = grid;
+  const visibleRows = Math.max(2, Math.ceil(height / rowHeight) + 1);
+  useEffect(() => {if (ui?.tool !== 'pages') {setGridWidth(0);}}, [ui?.tool]);
   const toolChanged = `${r?.id}:${snapshot?.preferences.sortCriterion}:${snapshot?.preferences.descending}`;
   let content: React.ReactNode;
   if (problem) {
@@ -83,7 +88,7 @@ function ReaderControls() {
   return <View pointerEvents="box-none" style={s.root}>
     {Platform.OS === 'android' && <StatusBar hidden/>}
     {Platform.OS === 'android' && r && <NativeReaderCanvas key={r.id} readerId={r.id} style={StyleSheet.absoluteFill} testID="readerCanvas"/>}
-    {!ui && <View pointerEvents="none" style={s.loading}><View style={s.loadingChip}><ActivityIndicator color="white"/></View></View>}
+    {!ui && <View pointerEvents="none" style={s.loading}><View style={s.loadingChip}><ActivityIndicator color={chromeText}/></View></View>}
     {ui && <SafeAreaView pointerEvents="box-none" style={s.root}>
       {ui.controls && <>
         <View pointerEvents="box-none" style={s.top}>
@@ -110,8 +115,8 @@ function ReaderControls() {
     <Modal visible={modal} transparent animationType="fade" onRequestClose={closeTool} statusBarTranslucent
       supportedOrientations={['portrait', 'portrait-upside-down', 'landscape']}>
       <SafeAreaProvider>
-      <SafeAreaView style={[s.scrim, {backgroundColor: c.scrim}]}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={[s.sheet, {backgroundColor: sheetTool === 'settings' || sheetTool === 'pages' ? c.background : c.surface, borderColor: c.line}, sheetTool === 'pages' && s.overview, sheetTool === 'jump' && s.compactSheet]}>
+      <SafeAreaView style={[s.scrim, {backgroundColor: c.scrim}, sheetTool === 'pages' && {padding: scrimPadding}]}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={[s.sheet, {backgroundColor: sheetTool === 'settings' || sheetTool === 'pages' ? c.background : c.surface, borderColor: c.line}, sheetTool === 'pages' && [s.overview, compact && s.compactOverview], sheetTool === 'jump' && s.compactSheet]}>
         {sheetTool === 'settings' && <View style={[s.overviewHeader, {borderBottomColor: c.line}]}>
           <View style={{flex: 1}}><Label heading>Reader settings</Label></View><Action title="Done" compact kind="primary" testID="readerSettingsDone" onPress={closeTool}/>
         </View>}
@@ -119,21 +124,21 @@ function ReaderControls() {
           <View style={[s.overviewHeader, {borderBottomColor: c.line}]}><View style={{flex: 1}}><Label heading>All pages</Label>
             <Label variant="caption" muted>Page {ui!.page} of {ui!.count}</Label></View>
             <Action title="Done" compact kind="primary" testID="readerPagesDone" onPress={closeTool}/></View>
-          <FlatList key={`${columns}:${toolChanged}`} testID="thumbnailGrid" numColumns={columns} data={Array.from({length: ui!.count}, (_, i) => i)}
-            windowSize={5} initialNumToRender={columns * 3} maxToRenderPerBatch={columns * 3}
+          <FlatList key={`${columns}:${rowHeight}:${toolChanged}`} testID="thumbnailGrid" numColumns={columns} data={Array.from({length: ui!.count}, (_, i) => i)}
+            onLayout={event => {const next = Math.floor(event.nativeEvent.layout.width); if (next > 0 && next !== gridWidth) {setGridWidth(next);}}}
+            windowSize={5} initialNumToRender={visibleRows} maxToRenderPerBatch={visibleRows}
             keyExtractor={i => String(i)} initialScrollIndex={Math.floor(Math.max(0, ui!.page - 1) / columns)}
-            getItemLayout={(_, index) => ({length: rowHeight,
-              offset: (rowHeight) * index, index})}
-            contentContainerStyle={{padding: 12}} renderItem={({item}) => {
+            getItemLayout={(_, index) => ({length: rowHeight, offset: PAGE_GRID_PADDING + rowHeight * index, index})}
+            contentContainerStyle={{paddingVertical: PAGE_GRID_PADDING, paddingHorizontal: grid.sidePadding}} renderItem={({item}) => {
               const current = ui!.page === item + 1;
               return <Pressable testID={`thumbnail_${item}`} accessibilityRole="button"
                 accessibilityLabel={`Open page ${item + 1}`} accessibilityState={{selected: current, disabled: ui!.sorting || pending}}
                 disabled={ui!.sorting || pending} onPress={() => {act('seek', item + 1); act('dismissTool');}}
-                style={({pressed}) => [s.thumbnail, {width: `${100 / columns}%`, borderColor: current ? c.accent : 'transparent', backgroundColor: current ? c.accentSoft : 'transparent', opacity: pressed ? 0.7 : 1}]}>
-                <View style={[s.thumbnailImage, {backgroundColor: c.surfaceAlt}]}>
-                  <NativeArchiveCover archiveId="" readerId={r.id} pageIndex={item} accessible={false} style={{width: '100%', aspectRatio: 0.7}}/>
+                style={({pressed}) => [s.thumbnail, {width: grid.cellWidth, height: rowHeight, borderColor: current ? c.accent : 'transparent', backgroundColor: current ? c.accentSoft : 'transparent', opacity: pressed ? 0.7 : 1}]}>
+                <View style={[s.thumbnailImage, {height: grid.imageHeight, backgroundColor: c.surfaceAlt}]}>
+                  <NativeArchiveCover archiveId="" readerId={r.id} pageIndex={item} accessible={false} style={s.fill}/>
                 </View>
-                <Text style={[s.pageLabel, {color: current ? c.accent : c.muted, height: labelHeight, fontWeight: current ? '700' : '500'}]} numberOfLines={1}>{item + 1}</Text>
+                <Text maxFontSizeMultiplier={2} style={[s.pageLabel, {color: current ? c.accent : c.muted, height: grid.labelHeight, fontWeight: current ? '700' : '500'}]} numberOfLines={1}>{item + 1}</Text>
               </Pressable>;
             }}/>
         </View> : <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.modalContent}>
@@ -152,9 +157,10 @@ function ReaderButton({title, label, value, testID, onPress, disabled = false, b
     <Text numberOfLines={1} maxFontSizeMultiplier={1.5} style={[s.buttonText, symbol && s.symbolText]}>{title}</Text></Pressable>;
 }
 export function ReaderApp() {return <Theme appearance="dark"><ReaderControls/></Theme>;}
-const chrome = 'rgba(16,18,24,0.78)';
-const chromeLine = 'rgba(255,255,255,0.10)';
-const s = StyleSheet.create({root: {flex: 1}, loading: {position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center'},
+const chrome = 'rgba(30,23,18,0.84)';
+const chromeLine = 'rgba(255,232,204,0.14)';
+const chromeText = '#F7ECDD';
+const s = StyleSheet.create({root: {flex: 1}, fill: {width: '100%', height: '100%'}, loading: {position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center'},
   loadingChip: {width: 56, height: 56, borderRadius: 28, backgroundColor: chrome, justifyContent: 'center', alignItems: 'center'},
   top: {flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: 8, gap: 8},
   actions: {flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', marginLeft: 'auto', gap: 8},
@@ -164,17 +170,17 @@ const s = StyleSheet.create({root: {flex: 1}, loading: {position: 'absolute', to
   button: {minHeight: 48, minWidth: 48, maxWidth: 160, borderRadius: 24, paddingHorizontal: 16, justifyContent: 'center'},
   symbolButton: {width: 48, paddingHorizontal: 0}, symbolText: {fontSize: 24},
   floatingButton: {backgroundColor: chrome, borderWidth: StyleSheet.hairlineWidth, borderColor: chromeLine},
-  bareButton: {backgroundColor: 'transparent'}, pressed: {backgroundColor: 'rgba(255,255,255,0.14)'},
-  buttonText: {color: 'white', fontSize: 15, fontWeight: '600', textAlign: 'center', fontVariant: ['tabular-nums']},
-  failure: {position: 'absolute', alignSelf: 'center', top: '38%', gap: 14, alignItems: 'center', padding: 20, borderRadius: 20, backgroundColor: chrome},
-  failureTitle: {color: 'white', fontSize: 16, fontWeight: '600'},
+  bareButton: {backgroundColor: 'transparent'}, pressed: {backgroundColor: 'rgba(255,232,204,0.14)'},
+  buttonText: {color: chromeText, fontSize: 15, fontWeight: '600', textAlign: 'center', fontVariant: ['tabular-nums']},
+  failure: {position: 'absolute', alignSelf: 'center', top: '38%', gap: 14, alignItems: 'center', padding: 20, borderRadius: 20, backgroundColor: chrome, borderWidth: StyleSheet.hairlineWidth, borderColor: chromeLine},
+  failureTitle: {color: chromeText, fontSize: 16, fontWeight: '600'},
   scrim: {flex: 1, justifyContent: 'center', padding: 20},
   sheet: {width: '100%', maxWidth: 680, maxHeight: '95%', alignSelf: 'center', borderRadius: 24, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth},
   compactSheet: {maxWidth: 440},
-  overview: {maxWidth: 1100, height: '95%'}, modalContent: {padding: 24},
+  overview: {maxWidth: 1100, height: '95%'}, compactOverview: {height: '100%', maxHeight: '100%', borderRadius: 20}, modalContent: {padding: 24},
   overviewHeader: {paddingHorizontal: 20, paddingVertical: 14, gap: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth},
-  thumbnail: {padding: 6, borderWidth: 2, borderRadius: 12}, thumbnailImage: {borderRadius: 6, overflow: 'hidden'},
-  pageLabel: {fontSize: 14, height: 28, lineHeight: 28, textAlign: 'center', fontVariant: ['tabular-nums']},
+  thumbnail: {padding: 4, borderWidth: 2, borderRadius: 12}, thumbnailImage: {borderRadius: 6, overflow: 'hidden'},
+  pageLabel: {fontSize: 14, lineHeight: 26, textAlign: 'center', fontVariant: ['tabular-nums']},
   jumpField: {flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 16},
   input: {flex: 1, minWidth: 0, fontSize: 28, fontWeight: '700', minHeight: 60, paddingVertical: 8, fontVariant: ['tabular-nums']},
   jumpTotal: {fontSize: 18, fontWeight: '500', marginLeft: 8},

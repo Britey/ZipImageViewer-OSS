@@ -7,6 +7,7 @@ import {Action, Actions, Badge, Card, Detail, DialogHeader, Gesture, Label, form
 import {ArchiveCard, openedDate, readingPosition} from './ArchiveCard';
 import {Settings} from './Settings';
 import {useNativeLibrary} from './useNativeLibrary';
+import {COVER_ASPECT, LIBRARY_GAP, LIBRARY_GUTTER, LIBRARY_MAX_WIDTH, libraryGrid} from './layout';
 
 type LocalModal = {type: 'details'; id: string} | {type: 'remove'; id: string} | {type: 'clear'} | {type: 'help'} | null;
 export function LibraryApp() {
@@ -15,8 +16,9 @@ export function LibraryApp() {
   const [search, setSearch] = useState('');
   const [local, setLocal] = useState<LocalModal>(null);
   const c = usePalette();
-  const {width, fontScale} = useWindowDimensions();
-  const columns = fontScale > 1.3 ? 1 : width >= 1120 ? 3 : width >= 720 ? 2 : 1;
+  const {width, height, fontScale} = useWindowDimensions();
+  const [listWidth, setListWidth] = useState(0);
+  const {columns, tiles, coverWidth} = libraryGrid(listWidth || width, height, fontScale);
   const operation = snapshot?.import;
   useEffect(() => {
     if (snapshot?.reader?.id) {setSettings(false); setLocal(null);}
@@ -132,8 +134,9 @@ export function LibraryApp() {
       : settings ? <ScrollView testID="settingsScreen" contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <View style={s.settings}><Settings snapshot={snapshot} dispatch={dispatch} disabled={busy} showHelp={() => setLocal({type: 'help'})} clearArchives={() => setLocal({type: 'clear'})}/></View>
       </ScrollView> : <FlatList key={`library-${columns}`} testID="libraryScreen" numColumns={columns} data={filtered} keyExtractor={a => a.id} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled"
+        onLayout={event => {const next = Math.round(event.nativeEvent.layout.width); if (next !== listWidth) {setListWidth(next);}}}
         columnWrapperStyle={columns > 1 ? s.columns : undefined}
-        ItemSeparatorComponent={() => <View style={{height: 12}}/>}
+        ItemSeparatorComponent={Separator}
         ListHeaderComponent={<View style={s.stack}>
           <View style={s.openRow}><View style={controls.grow}><Action title="Open archive" testID="openArchive" kind="primary" disabled={busy} onPress={() => {void dispatch({type: 'pickArchive'});}}/></View>
             {snapshot.capabilities.pickerPreferences && <View style={controls.grow}><Action title="Open using another file app…" testID="pickArchiveOnce" disabled={busy}
@@ -159,7 +162,8 @@ export function LibraryApp() {
           <Label muted style={s.emptyText}>{snapshot.archives.length ? 'Try another title or clear your search.' : 'Open a ZIP, CBZ or 7z archive from your files to start reading. Your library and reading progress stay on this device.'}</Label>
           <View style={s.centerActions}>{snapshot.archives.length ? <Action title="Clear search" onPress={() => setSearch('')}/> : <Action title="Open archive" testID="openEmptyArchive" kind="primary" disabled={busy} onPress={() => {void dispatch({type: 'pickArchive'});}}/>}</View>
         </View>}
-        renderItem={({item}) => <View style={[columns > 1 && s.archive, {width: `${100 / columns}%`}]}><ArchiveCard archive={item} disabled={busy} details={() => setLocal({type: 'details', id: item.id})}
+        renderItem={({item}) => <View style={[columns > 1 && s.archive, {width: `${100 / columns}%`}]}><ArchiveCard archive={item} disabled={busy} tile={tiles} coverWidth={coverWidth}
+          details={() => setLocal({type: 'details', id: item.id})}
           open={() => {void dispatch(item.available ? {type: 'openArchive', id: item.id} : {type: 'pickArchive'});}}/></View>}/>}
     <Modal visible={Boolean(modalType)} transparent animationType="fade" onRequestClose={closeModal} supportedOrientations={['portrait', 'portrait-upside-down', 'landscape']}
       onDismiss={() => {if (Platform.OS === 'ios') {void dispatch({type: 'presentationReady'});}}} statusBarTranslucent>
@@ -178,13 +182,14 @@ function searchKey(text: string): string {
   return Platform.OS === 'ios' ? lower.normalize('NFD').replace(/\p{M}/gu, '') : lower;
 }
 
+const Separator = () => <View style={{height: LIBRARY_GAP}}/>;
 const s = StyleSheet.create({
   root: {flex: 1}, fill: {width: '100%', height: '100%'},
-  header: {paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', width: '100%', maxWidth: 1280, alignSelf: 'center'},
+  header: {paddingHorizontal: LIBRARY_GUTTER, paddingTop: 16, paddingBottom: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', width: '100%', maxWidth: LIBRARY_MAX_WIDTH, alignSelf: 'center'},
   headerTitle: {flexGrow: 1, maxWidth: '100%'}, headerAction: {marginLeft: 'auto'},
-  content: {paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40, gap: 12, width: '100%', maxWidth: 1280, alignSelf: 'center'},
+  content: {paddingHorizontal: LIBRARY_GUTTER, paddingTop: 4, paddingBottom: 40, gap: 12, width: '100%', maxWidth: LIBRARY_MAX_WIDTH, alignSelf: 'center'},
   settings: {width: '100%', maxWidth: 720, alignSelf: 'center'}, settingsHeader: {maxWidth: 760},
-  columns: {alignItems: 'stretch', marginHorizontal: -6}, archive: {paddingHorizontal: 6},
+  columns: {alignItems: 'stretch', marginHorizontal: -LIBRARY_GAP / 2}, archive: {paddingHorizontal: LIBRARY_GAP / 2},
   stack: {gap: 14, paddingBottom: 4}, center: {flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16, padding: 24},
   centerActions: {gap: 10, alignSelf: 'center', maxWidth: 360, width: '100%'},
   openRow: {flexDirection: 'row', flexWrap: 'wrap', gap: 10},
@@ -209,7 +214,7 @@ const s = StyleSheet.create({
   dot: {width: 6, height: 6, borderRadius: 3},
   note: {padding: 14, borderRadius: 12},
   detailsHeader: {flexDirection: 'row', gap: 16, alignItems: 'center'},
-  detailsCover: {width: 88, height: 124, borderRadius: 10, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth},
+  detailsCover: {width: 104, aspectRatio: COVER_ASPECT, borderRadius: 8, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth},
   detailsTitle: {gap: 8}, badges: {flexDirection: 'row', gap: 6, flexWrap: 'wrap'},
   detailList: {borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8},
 });

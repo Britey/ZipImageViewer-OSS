@@ -1,5 +1,5 @@
 import React from 'react';
-import {Modal, Platform, Pressable, TextInput} from 'react-native';
+import {FlatList, Modal, Platform, Pressable, StyleSheet, Text, TextInput} from 'react-native';
 import renderer, {act} from 'react-test-renderer';
 import {ReaderApp} from '../ReaderApp';
 import {PagePosition} from '../PagePosition';
@@ -119,4 +119,35 @@ it('shows rotation controls live before settings and dispatches both directions 
   await act(async () => tree.update(<ReaderApp/>));
   await act(async () => tree.root.findAllByType(Toggle).find(n => n.props.title === 'Show image rotation buttons')!.props.onChange(false));
   expect(dispatch).toHaveBeenLastCalledWith({type: 'updatePreferences', preferences: {...s.preferences, showRotationButtons: false}});
+});
+
+
+it('uses the measured overview width and scrolls to the row containing a late page', async () => {
+  const s = state(); s.reader!.ui!.tool = 'pages'; s.reader!.ui!.count = 200; s.reader!.ui!.page = 137;
+  await mount(s);
+  const grid = () => tree.root.findByType(FlatList);
+  await act(async () => grid().props.onLayout({nativeEvent: {layout: {width: 984}}}));
+  expect(grid().props.numColumns).toBe(5);
+  expect(grid().props.initialScrollIndex).toBe(27);
+  const layout = grid().props.getItemLayout(null, 27);
+  expect(layout.offset).toBe(8 + 27 * layout.length);
+  const cell = grid().props.renderItem({item: 136, index: 136});
+  const cellStyle = StyleSheet.flatten(cell.props.style({pressed: false}));
+  expect(cellStyle.width).toBe(193);
+  expect(cellStyle.height).toBe(layout.length);
+  expect(cell.props.accessibilityState.selected).toBe(true);
+  await act(async () => cell.props.onPress());
+  expect(dispatch).toHaveBeenNthCalledWith(1, {type: 'readerAction', readerId: 'session-42', action: 'seek', page: 137, sequence: 51, scrubbing: false});
+  expect(dispatch).toHaveBeenNthCalledWith(2, {type: 'readerAction', readerId: 'session-42', action: 'dismissTool'});
+  await act(async () => grid().props.onLayout({nativeEvent: {layout: {width: 304}}}));
+  expect(grid().props.numColumns).toBe(2);
+  expect(grid().props.initialScrollIndex).toBe(68);
+});
+
+it('leaves page label line height unscaled so native large text scaling happens once', async () => {
+  const s = state(); s.reader!.ui!.tool = 'pages'; await mount(s);
+  const cell = tree.root.findByType(FlatList).props.renderItem({item: 0, index: 0});
+  const label = React.Children.toArray(cell.props.children).find((node: any) => node.type === Text) as React.ReactElement<any>;
+  expect(StyleSheet.flatten(label.props.style).lineHeight).toBe(26);
+  expect(label.props.maxFontSizeMultiplier).toBe(2);
 });

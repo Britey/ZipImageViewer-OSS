@@ -3,15 +3,16 @@ import {Platform, Pressable, StyleSheet, Switch, Text, View, useColorScheme, use
 import type {StyleProp, TextStyle, ViewStyle} from 'react-native';
 
 const light = {
-  background: '#F2F3F7', surface: '#FFFFFF', surfaceAlt: '#E8EAF0', text: '#141821', muted: '#677084', line: '#E1E4EB',
-  accent: '#2F5BD3', accentSoft: 'rgba(47,91,211,0.11)', accentText: '#FFFFFF', danger: '#C42F49', dangerSoft: 'rgba(196,47,73,0.10)',
-  track: '#D5D9E2', scrim: 'rgba(12,16,24,0.48)',
+  background: '#F5EEE2', surface: '#FFFBF4', surfaceAlt: '#EEE4D3', text: '#2B211A', muted: '#6E5F52', line: '#E3D6C2',
+  accent: '#A34B27', accentSoft: 'rgba(163,75,39,0.12)', accentText: '#FFF8F0', danger: '#A3303F', dangerSoft: 'rgba(163,48,63,0.10)',
+  track: '#E2D4BE', scrim: 'rgba(43,30,20,0.46)',
 };
 const dark: typeof light = {
-  background: '#0E1116', surface: '#191D25', surfaceAlt: '#242A35', text: '#EEF1F6', muted: '#9BA4B4', line: '#2B313D',
-  accent: '#8FB0FF', accentSoft: 'rgba(143,176,255,0.15)', accentText: '#0D1A35', danger: '#FF8A9B', dangerSoft: 'rgba(255,138,155,0.13)',
-  track: '#363D4A', scrim: 'rgba(0,0,0,0.66)',
+  background: '#1B1613', surface: '#26201B', surfaceAlt: '#332A23', text: '#F3EADF', muted: '#B8A897', line: '#3E342C',
+  accent: '#E5A060', accentSoft: 'rgba(229,160,96,0.16)', accentText: '#2A1A0C', danger: '#F0938A', dangerSoft: 'rgba(240,147,138,0.14)',
+  track: '#473B31', scrim: 'rgba(12,8,5,0.68)',
 };
+export const serif = Platform.select({ios: 'Georgia', android: 'serif', default: undefined});
 type Palette = typeof light;
 const PaletteContext = createContext<Palette>(light);
 // Android preferences are stored as Float32; their JSON Double values carry
@@ -139,12 +140,12 @@ export function Gesture({title, text}: {title: string; text: string}) {
 
 export const formatBytes = (bytes: number) => bytes >= 1e9 ? `${(bytes / 1e9).toFixed(1)} GB` : bytes >= 1e6 ? `${(bytes / 1e6).toFixed(1)} MB` : bytes >= 1000 ? `${(bytes / 1000).toFixed(1)} KB` : `${Math.round(bytes)} B`;
 export const styles = StyleSheet.create({
-  text: {fontSize: 16, lineHeight: 22},
-  title: {fontSize: 30, lineHeight: 36, fontWeight: '800', letterSpacing: -0.5},
-  heading: {fontSize: 20, lineHeight: 26, fontWeight: '700', letterSpacing: -0.2},
+  text: {fontSize: 16, lineHeight: 23},
+  title: {fontFamily: serif, fontSize: 32, lineHeight: 39, fontWeight: '700'},
+  heading: {fontFamily: serif, fontSize: 21, lineHeight: 27, fontWeight: '700'},
   body: {},
-  caption: {fontSize: 13, lineHeight: 18},
-  overline: {fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase'},
+  caption: {fontSize: 13, lineHeight: 19},
+  overline: {fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase'},
   actionText: {fontSize: 16, lineHeight: 21, fontWeight: '600', textAlign: 'center'},
   iconText: {fontSize: 22, lineHeight: 24, fontWeight: '500'},
   action: {minHeight: 50, paddingHorizontal: 18, paddingVertical: 12, borderRadius: 14, justifyContent: 'center', alignItems: 'center'},
