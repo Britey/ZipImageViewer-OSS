@@ -1,0 +1,3730 @@
+--- a/src/C/7zTypes.h
++++ b/src/C/7zTypes.h
+@@ -554,6 +554,7 @@
+ 
+ 
+ #define Z7_memset_0_ARRAY(a)  memset((a), 0, sizeof(a))
++#define Z7_memset_0_VAR(a)  memset(&(a), 0, sizeof(a))
+ 
+ #ifndef Z7_ARRAY_SIZE
+ #define Z7_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+--- a/src/C/7zVersion.h
++++ b/src/C/7zVersion.h
+@@ -1,7 +1,7 @@
+ #define MY_VER_MAJOR 26
+-#define MY_VER_MINOR 1
++#define MY_VER_MINOR 6
+ #define MY_VER_BUILD 0
+-#define MY_VERSION_NUMBERS "26.01"
++#define MY_VERSION_NUMBERS "26.06"
+ #define MY_VERSION MY_VERSION_NUMBERS
+ 
+ #ifdef MY_CPU_NAME
+@@ -10,7 +10,7 @@
+   #define MY_VERSION_CPU MY_VERSION
+ #endif
+ 
+-#define MY_DATE "2026-04-27"
++#define MY_DATE "2026-11-06"
+ #undef MY_COPYRIGHT
+ #undef MY_VERSION_COPYRIGHT_DATE
+ #define MY_AUTHOR_NAME "Igor Pavlov"
+--- a/src/C/Bcj2Enc.c
++++ b/src/C/Bcj2Enc.c
+@@ -1,5 +1,5 @@
+ /* Bcj2Enc.c -- BCJ2 Encoder converter for x86 code (Branch CALL/JUMP variant2)
+-2023-04-02 : Igor Pavlov : Public domain */
++: Igor Pavlov : Public domain */
+ 
+ #include "Precomp.h"
+ 
+@@ -75,7 +75,10 @@
+     p->cache = (Byte)(low >> 24);
+   }
+   p->cacheSize++;
+-  p->low = low << 8;
++  {
++    const UInt32 low2 = low << 8;
++    p->low = low2;
++  }
+   return False;
+ }
+ 
+--- a/src/C/Compiler.h
++++ b/src/C/Compiler.h
+@@ -76,6 +76,11 @@
+   #pragma GCC diagnostic ignored "-Wreserved-identifier"
+ #endif
+ 
++#if __clang_major__ >= 22
++// for "StdAfx.h" and "Precomp.h"
++#pragma GCC diagnostic ignored "-Wshadow-header"
++#endif
++
+ #endif // __clang__
+ 
+ #if defined(__clang__) && __clang_major__ >= 16
+@@ -120,6 +125,36 @@
+ #pragma warning(disable : 4464) // relative include path contains '..'
+ #endif
+ 
++// #define Z7_ANALYZE_MODE
++#if defined(Z7_ANALYZE_MODE) // && defined(Z7_MSC_VER_ORIGINAL)
++// for -analyze switch:
++#if _MSC_VER >= 1900
++#pragma warning(disable : 6001) // Using uninitialized memory 'ps'.
++#pragma warning(disable : 6031) // Return value ignored: 'CoInitialize'
++#pragma warning(disable : 6553) // The annotation for function 'RegOpenKeyExW' on _Param_(3) does not apply to a value type.
++#pragma warning(disable : 28159) // Random.cpp(21) : Consider using 'GetTickCount64' instead of 'GetTickCount'
++#pragma warning(disable : 28160) // ProcessUtils.h(92) : Error annotation: Passing MEM_RELEASE and a non-zero dwSize parameter to VirtualFree is not allowed. This results in the failure of this call
++#pragma warning(disable : 28251) // Inconsistent annotation for 'WinMain': this instance has no annotations. See c:\program files (x86)\windows kits\10\include\10.0.26100.0\um\winbase.h(1062).
++#pragma warning(disable : 28286) // um\consoleapi.h(236) : For function 'ReadConsoleW', error near the end of 'SAL_readableTo(byteCount(*__formal(3,lpNumberOfCharsRead) * sizeof(TCHAR%)))'.
++#pragma warning(disable : 28301) // No annotations for first declaration of 'PNTSTATUS'. See c:\program files (x86)\windows kits\10\include\10.0.26100.0\shared\bcrypt.h(40).
++#endif
++#if _MSC_VER >= 1600
++#pragma warning(disable : 6011) // Dereferencing NULL pointer 'p->IsDirs'
++#pragma warning(disable : 6255) // `_alloca` indicates failure by raising a stack overflow exception.  Consider using _malloca instead.
++#pragma warning(disable : 6258) // Using TerminateThread does not allow proper thread clean up.
++// #pragma warning(disable : 6262) // SfxSetup.c : Function uses '32808' bytes of stack.
++#pragma warning(disable : 6320) // Threads.c : Exception-filter expression is the constant EXCEPTION_EXECUTE_HANDLER. This might mask exceptions that were not intended to be handled.
++#pragma warning(disable : 6385) // createcoder.cpp : Invalid data: accessing 'struct CCodecInfo const * * g_Codecs', the readable size is '256' bytes, but '4194244' bytes might be read: Lines: 338, 339, 340, 342, 344
++#pragma warning(disable : 6387) // MyString.cpp : 's' could be '0':  this does not adhere to the specification for the function 'wmemcpy'
++#endif
++#if _MSC_VER == 1600
++#pragma warning(disable : 6200) // compressdialog.cpp : Index '31' is out of valid index range '0' to '9' for non-stack buffer 'g_Levels'
++#pragma warning(disable : 6204) // Possible buffer overrun in call to 'memset': use of unchecked parameter 'size'
++#pragma warning(disable : 6309) // Argument '1' is null: this does not adhere to function specification of 'GetProcAddress'
++#pragma warning(disable : 6386) // myvector.h : Buffer overrun: accessing 'argument 1', the writable size is 'newCapacity*4' bytes, but '8' bytes might be written
++#endif
++#endif // Z7_ANALYZE_MODE
++
+ // == 1200 : -O1 : for __forceinline
+ // >= 1900 : -O1 : for printf
+ #pragma warning(disable : 4710) // function not inlined
+--- a/src/C/CpuArch.h
++++ b/src/C/CpuArch.h
+@@ -209,6 +209,17 @@
+ #endif
+ 
+ 
++#if  defined(__s390__)
++#if  defined(__s390x__) || defined(__LP64__) || (defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8)
++  #define MY_CPU_NAME "s390x"
++  #define MY_CPU_SIZEOF_POINTER 8
++#else
++  #define MY_CPU_NAME "s390"
++  #define MY_CPU_SIZEOF_POINTER 4
++#endif
++#endif
++
++
+ // #undef MY_CPU_NAME
+ // #undef MY_CPU_SIZEOF_POINTER
+ // #define __e2k__
+@@ -365,6 +376,16 @@
+        | (((UInt32)(v) >>  8) & (UInt32)0xff00  ) \
+        | (((UInt32)(v) >> 24)                   ))
+ 
++#define Z7_BSWAP64_CONST(v) \
++       ( ( ( (UInt64)(v)                           ) << 8 * 7 ) \
++       | ( ( (UInt64)(v) & ((UInt32)0xff << 8 * 1) ) << 8 * 5 ) \
++       | ( ( (UInt64)(v) & ((UInt32)0xff << 8 * 2) ) << 8 * 3 ) \
++       | ( ( (UInt64)(v) & ((UInt32)0xff << 8 * 3) ) << 8 * 1 ) \
++       | ( ( (UInt64)(v) >> 8 * 1 ) & ((UInt32)0xff << 8 * 3) ) \
++       | ( ( (UInt64)(v) >> 8 * 3 ) & ((UInt32)0xff << 8 * 2) ) \
++       | ( ( (UInt64)(v) >> 8 * 5 ) & ((UInt32)0xff << 8 * 1) ) \
++       | ( ( (UInt64)(v) >> 8 * 7 )                           ) \
++       )
+ 
+ #if defined(_MSC_VER) && (_MSC_VER >= 1300)
+ 
+@@ -407,17 +428,7 @@
+        ))
+ 
+ #define Z7_BSWAP32(v) Z7_BSWAP32_CONST(v)
+-
+-#define Z7_BSWAP64(v) \
+-       ( ( ( (UInt64)(v)                           ) << 8 * 7 ) \
+-       | ( ( (UInt64)(v) & ((UInt32)0xff << 8 * 1) ) << 8 * 5 ) \
+-       | ( ( (UInt64)(v) & ((UInt32)0xff << 8 * 2) ) << 8 * 3 ) \
+-       | ( ( (UInt64)(v) & ((UInt32)0xff << 8 * 3) ) << 8 * 1 ) \
+-       | ( ( (UInt64)(v) >> 8 * 1 ) & ((UInt32)0xff << 8 * 3) ) \
+-       | ( ( (UInt64)(v) >> 8 * 3 ) & ((UInt32)0xff << 8 * 2) ) \
+-       | ( ( (UInt64)(v) >> 8 * 5 ) & ((UInt32)0xff << 8 * 1) ) \
+-       | ( ( (UInt64)(v) >> 8 * 7 )                           ) \
+-       )
++#define Z7_BSWAP64(v) Z7_BSWAP64_CONST(v)
+ 
+ #endif
+ 
+@@ -582,11 +593,15 @@
+ #if defined(MY_CPU_BE)
+ #define Z7_CONV_BE_TO_NATIVE_CONST32(v)  (v)
+ #define Z7_CONV_LE_TO_NATIVE_CONST32(v)  Z7_BSWAP32_CONST(v)
++#define Z7_CONV_BE_TO_NATIVE_CONST64(v)  (v)
++#define Z7_CONV_LE_TO_NATIVE_CONST64(v)  Z7_BSWAP64_CONST(v)
+ #define Z7_CONV_NATIVE_TO_BE_32(v)       (v)
+ // #define Z7_GET_NATIVE16_FROM_2_BYTES(b0, b1)  ((b1) | ((b0) << 8))
+ #elif defined(MY_CPU_LE)
+ #define Z7_CONV_BE_TO_NATIVE_CONST32(v)  Z7_BSWAP32_CONST(v)
+ #define Z7_CONV_LE_TO_NATIVE_CONST32(v)  (v)
++#define Z7_CONV_BE_TO_NATIVE_CONST64(v)  Z7_BSWAP64_CONST(v)
++#define Z7_CONV_LE_TO_NATIVE_CONST64(v)  (v)
+ #define Z7_CONV_NATIVE_TO_BE_32(v)       Z7_BSWAP32(v)
+ // #define Z7_GET_NATIVE16_FROM_2_BYTES(b0, b1)  ((b0) | ((b1) << 8))
+ #else
+--- a/src/C/Lzma2Enc.c
++++ b/src/C/Lzma2Enc.c
+@@ -129,11 +129,10 @@
+ static SRes Lzma2EncInt_EncodeSubblock(CLzma2EncInt *p, Byte *outBuf,
+     size_t *packSizeRes, ISeqOutStreamPtr outStream)
+ {
+-  size_t packSizeLimit = *packSizeRes;
++  const size_t packSizeLimit = *packSizeRes;
+   size_t packSize = packSizeLimit;
+   UInt32 unpackSize = LZMA2_UNPACK_SIZE_MAX;
+-  unsigned lzHeaderSize = 5 + (p->needInitProp ? 1 : 0);
+-  BoolInt useCopyBlock;
++  const unsigned lzHeaderSize = 5 + (p->needInitProp ? 1 : 0);
+   SRes res;
+ 
+   *packSizeRes = 0;
+@@ -150,22 +149,13 @@
+   if (unpackSize == 0)
+     return res;
+ 
+-  if (res == SZ_OK)
+-    useCopyBlock = (packSize + 2 >= unpackSize || packSize > (1 << 16));
+-  else
+-  {
+-    if (res != SZ_ERROR_OUTPUT_EOF)
+-      return res;
+-    res = SZ_OK;
+-    useCopyBlock = True;
+-  }
+-
+-  if (useCopyBlock)
++  if (res == SZ_ERROR_OUTPUT_EOF
++      || (res == SZ_OK && (packSize + 2 >= unpackSize || packSize > (1 << 16))))
+   {
+     size_t destPos = 0;
+     PRF(printf("################# COPY           "));
+ 
+-    while (unpackSize > 0)
++    while (unpackSize)
+     {
+       const UInt32 u = (unpackSize < LZMA2_COPY_CHUNK_SIZE) ? unpackSize : LZMA2_COPY_CHUNK_SIZE;
+       if (packSizeLimit - destPos < u + 3)
+@@ -194,6 +184,8 @@
+     return SZ_OK;
+   }
+ 
++  if (res != SZ_OK)
++    return res;
+   {
+     size_t destPos = 0;
+     const UInt32 u = unpackSize - 1;
+--- a/src/C/LzmaDec.c
++++ b/src/C/LzmaDec.c
+@@ -1,5 +1,5 @@
+ /* LzmaDec.c -- LZMA Decoder
+-2023-04-07 : Igor Pavlov : Public domain */
++: Igor Pavlov : Public domain */
+ 
+ #include "Precomp.h"
+ 
+@@ -462,8 +462,10 @@
+       if (state >= kNumStates)
+       {
+         UInt32 distance;
+-        prob = probs + PosSlot +
+-            ((len < kNumLenToPosStates ? len : kNumLenToPosStates - 1) << kNumPosSlotBits);
++        {
++          const unsigned temp = (len < kNumLenToPosStates ? len : kNumLenToPosStates - 1) << kNumPosSlotBits;
++          prob = probs + PosSlot + temp;
++        }
+         TREE_6_DECODE(prob, distance)
+         if (distance >= kStartPosModelIndex)
+         {
+@@ -857,9 +859,10 @@
+       if (state < 4)
+       {
+         unsigned posSlot;
+-        prob = probs + PosSlot +
+-            ((len < kNumLenToPosStates - 1 ? len : kNumLenToPosStates - 1) <<
+-            kNumPosSlotBits);
++        {
++          const unsigned temp = (len < kNumLenToPosStates - 1 ? len : kNumLenToPosStates - 1) << kNumPosSlotBits;
++          prob = probs + PosSlot + temp;
++        }
+         TREE_DECODE_CHECK(prob, 1 << kNumPosSlotBits, posSlot)
+         if (posSlot >= kStartPosModelIndex)
+         {
+@@ -867,7 +870,8 @@
+ 
+           if (posSlot < kEndPosModelIndex)
+           {
+-            prob = probs + SpecPos + ((2 | (posSlot & 1)) << numDirectBits);
++            const unsigned temp = (2 | (posSlot & 1)) << numDirectBits;
++            prob = probs + SpecPos + temp;
+           }
+           else
+           {
+--- a/src/C/LzmaEnc.c
++++ b/src/C/LzmaEnc.c
+@@ -692,7 +692,10 @@
+ {
+   UInt32 low = (UInt32)p->low;
+   unsigned high = (unsigned)(p->low >> 32);
+-  p->low = (UInt32)(low << 8);
++  {
++    const UInt32 low2 = low << 8;
++    p->low = low2;
++  }
+   if (low < (UInt32)0xFF000000 || high != 0)
+   {
+     {
+@@ -958,7 +961,8 @@
+     unsigned m;
+     unsigned bit;
+     RC_BIT_0(rc, probs)
+-    probs += (posState << (1 + kLenNumLowBits));
++    posState <<= (1 + kLenNumLowBits);
++    probs += posState;
+     bit = (sym >> 2)    ; RC_BIT(rc, probs + 1, bit)  m = (1 << 1) + bit;
+     bit = (sym >> 1) & 1; RC_BIT(rc, probs + m, bit)  m = (m << 1) + bit;
+     bit =  sym       & 1; RC_BIT(rc, probs + m, bit)
+@@ -1000,7 +1004,8 @@
+     for (posState = 0; posState < numPosStates; posState++)
+     {
+       UInt32 *prices = p->prices[posState];
+-      const CLzmaProb *probs = enc->low + (posState << (1 + kLenNumLowBits));
++      const unsigned posState2 = posState << (1 + kLenNumLowBits);
++      const CLzmaProb *probs = enc->low + posState2;
+       SetPrices_3(probs, a, prices, ProbPrices);
+       SetPrices_3(probs + kLenNumLowSymbols, c, prices + kLenNumLowSymbols, ProbPrices);
+     }
+@@ -2220,7 +2225,7 @@
+     UInt32 prob;
+     bit = sym & 1; sym >>= 1; price += GET_PRICEa(probs[m], bit); m = (m << 1) + bit;
+     bit = sym & 1; sym >>= 1; price += GET_PRICEa(probs[m], bit); m = (m << 1) + bit;
+-    bit = sym & 1; sym >>= 1; price += GET_PRICEa(probs[m], bit); m = (m << 1) + bit;
++    bit = sym & 1;            price += GET_PRICEa(probs[m], bit); m = (m << 1) + bit;
+     prob = probs[m];
+     p->alignPrices[i    ] = price + GET_PRICEa_0(prob);
+     p->alignPrices[i + 8] = price + GET_PRICEa_1(prob);
+--- a/src/C/Ppmd7Enc.c
++++ b/src/C/Ppmd7Enc.c
+@@ -1,5 +1,5 @@
+ /* Ppmd7Enc.c -- Ppmd7z (PPMdH with 7z Range Coder) Encoder
+-2023-09-07 : Igor Pavlov : Public domain
++: Igor Pavlov : Public domain
+ This code is based on:
+   PPMd var.H (2001): Dmitry Shkarin : Public domain */
+ 
+@@ -35,7 +35,10 @@
+     R->Cache = (Byte)((UInt32)R->Low >> 24);
+   }
+   R->CacheSize++;
+-  R->Low = (UInt32)((UInt32)R->Low << 8);
++  {
++    const UInt32 low2 = (UInt32)R->Low << 8;
++    R->Low = low2;
++  }
+ }
+ 
+ #define RC_NORM_BASE(p) if (R->Range < kTopValue) { R->Range <<= 8;  Ppmd7z_RangeEnc_ShiftLow(p);
+--- a/src/C/XzDec.c
++++ b/src/C/XzDec.c
+@@ -25,8 +25,8 @@
+ #define PRF(x)
+ #endif
+ 
+-#define PRF_STR(s) PRF(printf("\n" s "\n"))
+-#define PRF_STR_INT(s, d) PRF(printf("\n" s " %d\n", (unsigned)d))
++#define PRF_STR(s) PRF(printf("\n" s "\n");)
++#define PRF_STR_INT(s, d) PRF(printf("\n" s " %d\n", (unsigned)d);)
+ 
+ #include <stdlib.h>
+ #include <string.h>
+@@ -574,7 +574,7 @@
+ output (status) can be :
+   CODER_STATUS_NOT_FINISHED
+   CODER_STATUS_FINISHED_WITH_MARK
+-  CODER_STATUS_NEEDS_MORE_INPUT - not implemented still
++  CODER_STATUS_NEEDS_MORE_INPUT
+ */
+ 
+ static SRes MixCoder_Code(CMixCoder *p,
+@@ -582,8 +582,8 @@
+     const Byte *src, SizeT *srcLen, int srcWasFinished,
+     ECoderFinishMode finishMode)
+ {
+-  SizeT destLenOrig = *destLen;
+-  SizeT srcLenOrig = *srcLen;
++  const SizeT destLenOrig = *destLen;
++  const SizeT srcLenOrig = *srcLen;
+ 
+   *destLen = 0;
+   *srcLen = 0;
+@@ -597,39 +597,26 @@
+   if (p->outBuf)
+   {
+     SRes res;
+-    SizeT destLen2, srcLen2;
++    SizeT destLen2;
+     int wasFinished;
+     
+     PRF_STR("------- MixCoder Single ----------")
+       
+-    srcLen2 = srcLenOrig;
+     destLen2 = destLenOrig;
+-    
++    if (p->numCoders != 1)
+     {
+-      IStateCoder *coder = &p->coders[0];
+-      res = coder->Code2(coder->p, NULL, &destLen2, src, &srcLen2, srcWasFinished, finishMode,
+-          // &wasFinished,
+-          &p->status);
+-      wasFinished = (p->status == CODER_STATUS_FINISHED_WITH_MARK);
++      if (destLen2 < p->outWritten)
++        return SZ_ERROR_FAIL;
++      destLen2 -= p->outWritten;
+     }
+-    
+-    p->res = res;
+-    
+-    /*
+-    if (wasFinished)
+-      p->status = CODER_STATUS_FINISHED_WITH_MARK;
+-    else
++    *srcLen = srcLenOrig;
+     {
+-      if (res == SZ_OK)
+-        if (destLen2 != destLenOrig)
+-          p->status = CODER_STATUS_NEEDS_MORE_INPUT;
++      IStateCoder *coder = &p->coders[0];
++      res = coder->Code2(coder->p, NULL, &destLen2, src, srcLen, srcWasFinished, finishMode, &p->status);
+     }
+-    */
+-
+-    
+-    *srcLen = srcLen2;
+-    src += srcLen2;
++    p->res = res;
+     p->outWritten += destLen2;
++    wasFinished = (p->status == CODER_STATUS_FINISHED_WITH_MARK);
+     
+     if (res != SZ_OK || srcWasFinished || wasFinished)
+       p->wasFinished = True;
+@@ -1016,8 +1003,8 @@
+     const Byte *src, SizeT *srcLen, int srcFinished,
+     ECoderFinishMode finishMode, ECoderStatus *status)
+ {
+-  SizeT destLenOrig = *destLen;
+-  SizeT srcLenOrig = *srcLen;
++  const SizeT destLenOrig = *destLen;
++  const SizeT srcLenOrig = *srcLen;
+   *destLen = 0;
+   *srcLen = 0;
+   *status = CODER_STATUS_NOT_SPECIFIED;
+@@ -1767,7 +1754,9 @@
+           && XzBlock_HasPackSize(block))
+       {
+         {
+-          if (block->unpackSize * 2 * me->mtc.numStartedThreads > me->props.memUseMax)
++          // (me->mtc.numStartedThreads != 0)
++          if (me->mtc.numStartedThreads) // optional
++          if (block->unpackSize > me->props.memUseMax / 2 / me->mtc.numStartedThreads)
+           {
+             cc->state = MTDEC_PARSE_OVERFLOW;
+             return; // SZ_OK;
+--- a/src/CPP/7zip/Archive/7z/7zDecode.cpp
++++ b/src/CPP/7zip/Archive/7z/7zDecode.cpp
+@@ -18,7 +18,7 @@
+ )
+   CMyComPtr<ICompressProgressInfo> _progress;
+ public:
+-  CDecProgress(ICompressProgressInfo *progress): _progress(progress) {}
++  CDecProgress(ICompressProgressInfo *progress Z7_lifetimebound): _progress(progress) {}
+ };
+ 
+ Z7_COM7F_IMF(CDecProgress::SetRatioInfo(const UInt64 * /* inSize */, const UInt64 *outSize))
+--- a/src/CPP/7zip/Archive/7z/7zEncode.cpp
++++ b/src/CPP/7zip/Archive/7z/7zEncode.cpp
+@@ -323,20 +323,16 @@
+     ICompressProgressInfo *compressProgress)
+ {
+   RINOK(EncoderConstr())
+-
+   if (!_mixerRef)
+   {
+     RINOK(CreateMixerCoder(EXTERNAL_CODECS_LOC_VARS inSizeForReduce))
+   }
+-  
+   RINOK(_mixer->ReInit2())
+ 
+   CMyComPtr2<ICompressProgressInfo, CMtEncMultiProgress> mtProgress;
+   CMyComPtr2<ISequentialOutStream, CSequentialOutMtNotify> mtOutStreamNotify;
+-
+   CRecordVector<CSequentialOutTempBufferImp2 *> tempBufferSpecs;
+   CObjectVector<CMyComPtr<ISequentialOutStream> > tempBuffers;
+-  
+   unsigned i;
+ 
+   for (i = 1; i < _bindInfo.PackStreams.Size(); i++)
+@@ -348,34 +344,21 @@
+   }
+ 
+   const unsigned numMethods = _bindInfo.Coders.Size();
+-
+   for (i = 0; i < numMethods; i++)
+     _mixer->SetCoderInfo(i, NULL, NULL, false);
+ 
+-
+   /* inStreamSize can be used by BCJ2 to set optimal range of conversion.
+      But current BCJ2 encoder uses also another way to check exact size of current file.
+      So inStreamSize is not required. */
+-
+   /*
+   if (inStreamSize)
+     _mixer->SetCoderInfo(_bindInfo.UnpackCoder, inStreamSize, NULL);
+   */
+-
+-  
+-  /*
+-  CSequentialInStreamSizeCount2 *inStreamSizeCountSpec = new CSequentialInStreamSizeCount2;
+-  CMyComPtr<ISequentialInStream> inStreamSizeCount = inStreamSizeCountSpec;
+-  */
+-
+-  CSequentialOutStreamSizeCount *outStreamSizeCountSpec = NULL;
+-  CMyComPtr<ISequentialOutStream> outStreamSizeCount;
+-
++  // CMyComPtr2_Create<ISequentialInStream, CSequentialInStreamSizeCount2> inStreamSizeCount;
++  CMyComPtr2_Create<ISequentialOutStream, CSequentialOutStreamSizeCount> outStreamSizeCount;
+   // inStreamSizeCountSpec->Init(inStream);
+-
+   // ISequentialInStream *inStreamPointer = inStreamSizeCount;
+   ISequentialInStream *inStreamPointer = inStream;
+-
+   CRecordVector<ISequentialOutStream *> outStreamPointers;
+   
+   SetFolder(folderItem);
+@@ -466,11 +449,9 @@
+   
+   if (_bindInfo.PackStreams.Size() != 0)
+   {
+-    outStreamSizeCountSpec = new CSequentialOutStreamSizeCount;
+-    outStreamSizeCount = outStreamSizeCountSpec;
+-    outStreamSizeCountSpec->SetStream(mtOutStreamNotify.IsDefined() ?
++    outStreamSizeCount->SetStream(mtOutStreamNotify.IsDefined() ?
+         mtOutStreamNotify.Interface() : outStream);
+-    outStreamSizeCountSpec->Init();
++    outStreamSizeCount->Init();
+     outStreamPointers.Add(outStreamSizeCount);
+   }
+ 
+@@ -486,7 +467,7 @@
+         compressProgress, dataAfterEnd_Error))
+   
+   if (_bindInfo.PackStreams.Size() != 0)
+-    packSizes.Add(outStreamSizeCountSpec->GetSize());
++    packSizes.Add(outStreamSizeCount->GetSize());
+   
+   for (i = 1; i < _bindInfo.PackStreams.Size(); i++)
+   {
+--- a/src/CPP/7zip/Archive/7z/7zHandler.cpp
++++ b/src/CPP/7zip/Archive/7z/7zHandler.cpp
+@@ -108,7 +108,7 @@
+ }
+ 
+ 
+-static char *GetStringForSizeValue(char *s, UInt32 val)
++static char *GetStringForSizeValue(char *s Z7_lifetimebound, UInt32 val)
+ {
+   for (unsigned i = 0; i < 32; i++)
+     if (((UInt32)1 << i) == val)
+@@ -170,7 +170,7 @@
+ }
+ */
+ 
+-static char *AddProp32(char *s, const char *name, UInt32 v)
++static char *AddProp32(char *s Z7_lifetimebound, const char *name, UInt32 v)
+ {
+   *s++ = ':';
+   s = MyStpCpy(s, name);
+@@ -309,6 +309,11 @@
+     inByte.SkipDataNoCheck(idSize);
+     if (id64 == k_AES)
+       return true;
++    if ((mainByte & 0x10) != 0)
++    {
++      inByte.ReadNum(); // NumInStreams
++      inByte.ReadNum(); // NumOutStreams
++    }
+     if ((mainByte & 0x20) != 0)
+       inByte.SkipDataNoCheck(inByte.ReadNum());
+   }
+@@ -455,7 +460,7 @@
+             const UInt32 lp = d % 5;
+             if (lc != 3) dest = AddProp32(dest, "lc", lc);
+             if (lp != 0) dest = AddProp32(dest, "lp", lp);
+-            if (pb != 2) dest = AddProp32(dest, "pb", pb);
++            if (pb != 2) /* dest = */ AddProp32(dest, "pb", pb);
+           }
+         }
+       }
+--- a/src/CPP/7zip/Archive/7z/7zIn.cpp
++++ b/src/CPP/7zip/Archive/7z/7zIn.cpp
+@@ -297,7 +297,7 @@
+     (return_ptr >= limit) : limit was reached or crossed. So no signature found before limit
+ */
+ Z7_NO_INLINE
+-static const Byte *FindSignature_10(const Byte *p, const Byte *limit)
++static const Byte *FindSignature_10(const Byte *p Z7_lifetimebound, const Byte *limit Z7_lifetimebound)
+ {
+   for (;;)
+   {
+@@ -698,22 +698,24 @@
+   
+   WaitId(NID::kSize);
+   f.PackPositions.Alloc(numPackStreams + 1);
++  UInt64 * const packPositions = f.PackPositions;
+   f.NumPackStreams = numPackStreams;
+   UInt64 sum = 0;
+-  for (CNum i = 0; i < numPackStreams; i++)
++  for (CNum i = 0;;)
+   {
+-    f.PackPositions[i] = sum;
++    packPositions[i] = sum;
++    if (i == numPackStreams)
++      break;
++    i++;
+     const UInt64 packSize = ReadNumber();
+     sum += packSize;
+     if (sum < packSize)
+       ThrowIncorrect();
+   }
+-  f.PackPositions[numPackStreams] = sum;
+ 
+-  UInt64 type;
+   for (;;)
+   {
+-    type = ReadID();
++    const UInt64 type = ReadID();
+     if (type == NID::kEnd)
+       return;
+     if (type == NID::kCRC)
+@@ -857,19 +859,20 @@
+             StreamUsed[index] = true;
+           }
+           
+-        for (i = 0; i < numCoders; i++)
++        for (i = 0;;)
++        {
+           if (!CoderUsed[i])
+-          {
+-            indexOfMainStream = i;
+             break;
+-          }
+-          
+-        if (i == numCoders)
+-          ThrowUnsupported();
++          if (++i == numCoders)
++            ThrowUnsupported();
++        }
++        indexOfMainStream = i;
+       }
+       
+       folders.FoToCoderUnpackSizes[fo] = numCodersOutStreams;
+       numCodersOutStreams += numCoders;
++      if (numCodersOutStreams < numCoders)
++        ThrowUnsupported();
+       folders.FoStartPackStreamIndex[fo] = packStreamIndex;
+       if (numPackStreams > folders.NumPackStreams - packStreamIndex)
+         ThrowIncorrect();
+@@ -880,7 +883,7 @@
+     const size_t dataSize = (size_t)(_inByteBack->GetPtr() - startBufPtr);
+     folders.FoToCoderUnpackSizes[fo] = numCodersOutStreams;
+     folders.FoStartPackStreamIndex[fo] = packStreamIndex;
+-    folders.FoCodersDataOffset[fo] = (size_t)(_inByteBack->GetPtr() - startBufPtr);
++    folders.FoCodersDataOffset[fo] = dataSize;
+     folders.CodersData.CopyFrom(startBufPtr, dataSize);
+ 
+     // if (folders.NumPackStreams != packStreamIndex) ThrowUnsupported();
+@@ -898,6 +901,8 @@
+       return;
+     if (type == NID::kCRC)
+     {
++      if (!folders.FolderCRCs.Defs.IsEmpty())
++        ThrowIncorrect();
+       ReadHashDigests(numFolders, folders.FolderCRCs);
+       continue;
+     }
+@@ -911,19 +916,35 @@
+     CUInt32DefVector &digests)
+ {
+   folders.NumUnpackStreamsVector.Alloc(folders.NumFolders);
+-  CNum i;
+-  for (i = 0; i < folders.NumFolders; i++)
+-    folders.NumUnpackStreamsVector[i] = 1;
+   
++  bool NumUnpackStream_isFilled = false;
+   UInt64 type;
++
++  CNum numUnpackStreams = folders.NumFolders;
+   
+   for (;;)
+   {
+     type = ReadID();
+     if (type == NID::kNumUnpackStream)
+     {
+-      for (i = 0; i < folders.NumFolders; i++)
+-        folders.NumUnpackStreamsVector[i] = ReadNum();
++      if (NumUnpackStream_isFilled)
++        ThrowIncorrect();
++      NumUnpackStream_isFilled = true;
++      CNum numFolders = folders.NumFolders;
++      numUnpackStreams = 0;
++      if (numFolders)
++      {
++        UInt32 *dest = folders.NumUnpackStreamsVector.NonConstData();
++        do
++        {
++          const CNum num = ReadNum();
++          *dest++ = num;
++          numUnpackStreams += num;
++          if (numUnpackStreams < num)
++            ThrowUnsupported();
++        }
++        while (--numFolders);
++      }
+       continue;
+     }
+     if (type == NID::kCRC || type == NID::kSize || type == NID::kEnd)
+@@ -931,6 +952,20 @@
+     SkipData();
+   }
+ 
++  if (!NumUnpackStream_isFilled)
++  {
++    CNum numFolders = folders.NumFolders;
++    if (numFolders)
++    {
++      UInt32 *dest = folders.NumUnpackStreamsVector.NonConstData();
++      do
++        *dest++ = 1;
++      while (--numFolders);
++    }
++  }
++
++  unpackSizes.ClearAndReserve(numUnpackStreams);
++  CNum i;
+   if (type == NID::kSize)
+   {
+     for (i = 0; i < folders.NumFolders; i++)
+@@ -943,16 +978,20 @@
+       UInt64 sum = 0;
+       for (CNum j = 1; j < numSubstreams; j++)
+       {
++        if (unpackSizes.Size() >= numUnpackStreams)
++          ThrowIncorrect(); // internal failure
+         const UInt64 size = ReadNumber();
+-        unpackSizes.Add(size);
++        unpackSizes.AddInReserved(size);
+         sum += size;
+         if (sum < size)
+           ThrowIncorrect();
+       }
++      if (unpackSizes.Size() >= numUnpackStreams)
++        ThrowIncorrect(); // internal failure
+       const UInt64 folderUnpackSize = folders.GetFolderUnpackSize(i);
+       if (folderUnpackSize < sum)
+         ThrowIncorrect();
+-      unpackSizes.Add(folderUnpackSize - sum);
++      unpackSizes.AddInReserved(folderUnpackSize - sum);
+     }
+     type = ReadID();
+   }
+@@ -966,10 +1005,17 @@
+       if (val > 1)
+         ThrowIncorrect();
+       if (val == 1)
+-        unpackSizes.Add(folders.GetFolderUnpackSize(i));
++      {
++        if (unpackSizes.Size() >= numUnpackStreams)
++          ThrowIncorrect(); // internal failure
++        unpackSizes.AddInReserved(folders.GetFolderUnpackSize(i));
++      }
+     }
+   }
+ 
++  if (unpackSizes.Size() != numUnpackStreams)
++    ThrowIncorrect();
++
+   unsigned numDigests = 0;
+   for (i = 0; i < folders.NumFolders; i++)
+   {
+@@ -984,6 +1030,8 @@
+       break;
+     if (type == NID::kCRC)
+     {
++      if (!digests.Defs.IsEmpty())
++        ThrowIncorrect();
+       // CUInt32DefVector digests2;
+       // ReadHashDigests(numDigests, digests2);
+       CBoolVector digests2;
+@@ -1092,10 +1140,13 @@
+        So we don't need to fill digests with values. */
+     // digests.Vals.ClearAndSetSize(folders.NumFolders);
+     // BoolVector_Fill_False(digests.Defs, folders.NumFolders);
++    unpackSizes.ClearAndSetSize(folders.NumFolders);
++    UInt64 * const unpackSizes2 = unpackSizes.NonConstData();
++    CNum * const numUnpackStreamsVector2 = folders.NumUnpackStreamsVector;
+     for (CNum i = 0; i < folders.NumFolders; i++)
+     {
+-      folders.NumUnpackStreamsVector[i] = 1;
+-      unpackSizes.Add(folders.GetFolderUnpackSize(i));
++      numUnpackStreamsVector2[i] = 1;
++      unpackSizes2[i] = folders.GetFolderUnpackSize(i);
+       // digests.Vals[i] = 0;
+     }
+   }
+@@ -1648,8 +1699,8 @@
+   db.PhySize = kHeaderSize;
+ 
+   db.IsArc = false;
+-  if ((Int64)nextHeaderOffset < 0 ||
+-      nextHeaderSize > ((UInt64)1 << 62))
++  if (nextHeaderOffset >= (UInt64)1 << 62 ||
++      nextHeaderSize > ((UInt64)1 << 48))
+     return S_FALSE;
+ 
+   HeadersSize = kHeaderSize;
+--- a/src/CPP/7zip/Archive/7z/7zUpdate.cpp
++++ b/src/CPP/7zip/Archive/7z/7zUpdate.cpp
+@@ -36,13 +36,6 @@
+   UInt32 Offset; // for k_ARM64 / k_RISCV
+   // UInt32 AlignSizeOpt; // for k_ARM64
+ 
+-  CFilterMode():
+-    Id(0),
+-    Delta(0),
+-    Offset(0)
+-    // , AlignSizeOpt(0)
+-    {}
+-
+   void ClearFilterMode()
+   {
+     Id = 0;
+@@ -437,7 +430,11 @@
+   bool Encrypted;
+   unsigned GroupIndex;
+   
+-  CFilterMode2(): Encrypted(false) {}
++  void Construct()
++  {
++    ClearFilterMode();
++    Encrypted = false;
++  }
+ 
+   int Compare(const CFilterMode2 &m) const
+   {
+@@ -546,6 +543,7 @@
+     CRecordVector<CFilterMode2> &filters, const CFolderEx &f, bool extractFilter)
+ {
+   CFilterMode2 m;
++  m.Construct();
+   // m.Id = 0;
+   // m.Delta = 0;
+   // m.Offset = 0;
+@@ -586,12 +584,7 @@
+     UInt64 position, UInt64 size, ICompressProgressInfo *progress)
+ {
+   RINOK(InStream_SeekSet(inStream, position))
+-  CMyComPtr2_Create<ISequentialInStream, CLimitedSequentialInStream> streamSpec;
+-  streamSpec->SetStream(inStream);
+-  streamSpec->Init(size);
+-  CMyComPtr2_Create<ICompressCoder, NCompress::CCopyCoder> copyCoder;
+-  RINOK(copyCoder.Interface()->Code(streamSpec, outStream, NULL, NULL, progress))
+-  return (copyCoder->TotalSize == size ? S_OK : E_FAIL);
++  return NCompress::CopyStream_ExactSize(inStream, outStream, size, progress);
+ }
+ 
+ /*
+@@ -795,14 +788,14 @@
+   unsigned NamePos;
+   unsigned ExtensionIndex;
+   
+-  CRefItem() {}
+-  CRefItem(UInt32 index, const CUpdateItem &ui, bool sortByType):
+-    UpdateItem(&ui),
+-    Index(index),
+-    ExtensionPos(0),
+-    NamePos(0),
+-    ExtensionIndex(0)
++  void Construct(UInt32 index, const CUpdateItem &ui, bool sortByType)
+   {
++    UpdateItem = &ui;
++    Index = index;
++    ExtensionPos = 0;
++    NamePos = 0;
++    ExtensionIndex = 0;
++
+     if (sortByType)
+     {
+       const int slashPos = ui.Name.ReverseFind_PathSepar();
+@@ -2154,6 +2147,7 @@
+         continue;
+ 
+       CFilterMode2 fm;
++      fm.Construct();
+       if (useFilters)
+       {
+         // analysis.ATime_Defined = false;
+@@ -2710,7 +2704,7 @@
+     unsigned i;
+ 
+     for (i = 0; i < numFiles; i++)
+-      refItems[i] = CRefItem(group.Indices[i], updateItems[group.Indices[i]], sortByType);
++      refItems[i].Construct(group.Indices[i], updateItems[group.Indices[i]], sortByType);
+ 
+     CSortParam sortParam;
+     // sortParam.TreeFolders = &treeFolders;
+--- a/src/CPP/7zip/Archive/Common/CoderMixer2.h
++++ b/src/CPP/7zip/Archive/Common/CoderMixer2.h
+@@ -388,7 +388,7 @@
+     Z7_CLASS_NO_COPY(CReleaser)
+     CCoderMT &_c;
+   public:
+-    CReleaser(CCoderMT &c): _c(c) {}
++    CReleaser(CCoderMT &c Z7_lifetimebound): _c(c) {}
+     ~CReleaser() { _c.Release(); }
+   };
+ 
+--- a/src/CPP/7zip/Archive/Common/HandlerOut.cpp
++++ b/src/CPP/7zip/Archive/Common/HandlerOut.cpp
+@@ -98,7 +98,7 @@
+   
+   if (name.IsPrefixedBy_Ascii_NoCase("memuse"))
+   {
+-    UInt64 v;
++    UInt64 v = 0;
+     if (!ParseSizeString(name.Ptr(6), value, _memAvail, v))
+       hres = E_INVALIDARG;
+     _memUsage_Decompress = v;
+--- a/src/CPP/7zip/Archive/Common/MultiStream.cpp
++++ b/src/CPP/7zip/Archive/Common/MultiStream.cpp
+@@ -4,68 +4,6 @@
+ 
+ #include "MultiStream.h"
+ 
+-Z7_COM7F_IMF(CMultiStream::Read(void *data, UInt32 size, UInt32 *processedSize))
+-{
+-  if (processedSize)
+-    *processedSize = 0;
+-  if (size == 0)
+-    return S_OK;
+-  if (_pos >= _totalLength)
+-    return S_OK;
+-
+-  {
+-    unsigned left = 0, mid = _streamIndex, right = Streams.Size();
+-    for (;;)
+-    {
+-      CSubStreamInfo &m = Streams[mid];
+-      if (_pos < m.GlobalOffset)
+-        right = mid;
+-      else if (_pos >= m.GlobalOffset + m.Size)
+-        left = mid + 1;
+-      else
+-        break;
+-      mid = (left + right) / 2;
+-    }
+-    _streamIndex = mid;
+-  }
+-  
+-  CSubStreamInfo &s = Streams[_streamIndex];
+-  UInt64 localPos = _pos - s.GlobalOffset;
+-  if (localPos != s.LocalPos)
+-  {
+-    RINOK(s.Stream->Seek((Int64)localPos, STREAM_SEEK_SET, &s.LocalPos))
+-  }
+-  {
+-    const UInt64 rem = s.Size - localPos;
+-    if (size > rem)
+-      size = (UInt32)rem;
+-  }
+-  const HRESULT result = s.Stream->Read(data, size, &size);
+-  _pos += size;
+-  s.LocalPos += size;
+-  if (processedSize)
+-    *processedSize = size;
+-  return result;
+-}
+-  
+-Z7_COM7F_IMF(CMultiStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition))
+-{
+-  switch (seekOrigin)
+-  {
+-    case STREAM_SEEK_SET: break;
+-    case STREAM_SEEK_CUR: offset += _pos; break;
+-    case STREAM_SEEK_END: offset += _totalLength; break;
+-    default: return STG_E_INVALIDFUNCTION;
+-  }
+-  if (offset < 0)
+-    return HRESULT_WIN32_ERROR_NEGATIVE_SEEK;
+-  _pos = (UInt64)offset;
+-  if (newPosition)
+-    *newPosition = (UInt64)offset;
+-  return S_OK;
+-}
+-
+-
+ /*
+ class COutVolumeStream:
+   public ISequentialOutStream,
+--- a/src/CPP/7zip/Archive/Common/MultiStream.h
++++ b/src/CPP/7zip/Archive/Common/MultiStream.h
+@@ -3,55 +3,167 @@
+ #ifndef ZIP7_INC_MULTI_STREAM_H
+ #define ZIP7_INC_MULTI_STREAM_H
+ 
+-#include "../../../Common/MyCom.h"
+-#include "../../../Common/MyVector.h"
++#include "../../../Common/MyString.h"
+ 
+-#include "../../IStream.h"
+-#include "../../Archive/IArchive.h"
++struct CSplitVolName
++{
++  UString Changed;
++  UString Name; // Name[0 ... (ChangedPos -1)] - is unchanged part
++                // Name[ChangedPos ...]        - is changed part
++  unsigned ChangedPos;
++#ifndef Z7_SFX
++  int SpecPos; //   0 : both cases need to be checked : sequential_mode and skip_mode
++               //  -1 : use sequential_mode only : 7zip style
++               // > 0 : use skip_mode only : linux_split style
++  char PostfixChar; // '0' : 'a' : 'A'
++  bool IsComplicated;
+ 
+-Z7_CLASS_IMP_IInStream(
+-  CMultiStream
+-)
++  bool IsLatinPostfix() const { return PostfixChar != '0'; }
++  void AddPostfix_2Chars()
++  {
++    // for skip_mode: we add 2 additional postfix characters : linux_split style
++    Changed.Add_Char(PostfixChar);
++    Changed.Add_Char(PostfixChar);
++    SpecPos++;
++  }
++#endif
+ 
+-  unsigned _streamIndex;
+-  UInt64 _pos;
+-  UInt64 _totalLength;
++  CSplitVolName():
++      ChangedPos(0)
++#ifndef Z7_SFX
++      , SpecPos(0)
++#endif
++    {}
+ 
+-public:
++  bool ParseName()
++  {
++    if (Name.Len() < 2)
++      return false;
++    unsigned pos = Name.Len() - 2;
++#ifndef Z7_SFX
++    if (StringsAreEqualNoCase_Ascii(Name.Ptr(pos), "aa"))
++    {
++      PostfixChar = (char)Name.Back();
++      while (pos)
++      {
++        if (MyCharLower_Ascii(Name[pos - 1]) != 'a')
++          break;
++        pos--;
++      }
++    }
++    else
++#endif
++    {
++#ifndef Z7_SFX
++      PostfixChar = '0';
++#endif
++      pos++;
++      const wchar_t c = Name[pos];
++      if (c != '0' && c != '1')
++        return false;
++      while (pos)
++      {
++        if (Name[pos - 1] != '0')
++          break;
++        pos--;
++      }
++      if (Name.Len() - pos < 2
++          || pos == 0
++          || Name[pos - 1] != '.')
++        return false;
++    }
++    ChangedPos = pos;
++    Changed = Name.Ptr(pos);
++    return true;
++  }
+ 
+-  struct CSubStreamInfo Z7_final
++  void Generate_SubName(UString &s) const
+   {
+-    CMyComPtr<IInStream> Stream;
+-    UInt64 Size;
+-    UInt64 GlobalOffset;
+-    UInt64 LocalPos;
+-    CSubStreamInfo(): Size(0), GlobalOffset(0), LocalPos(0) {}
+-  };
+-
+-  CMyComPtr<IArchiveUpdateCallbackFile> updateCallbackFile;
+-  CObjectVector<CSubStreamInfo> Streams;
+- 
+-  HRESULT Init()
++    unsigned len = ChangedPos;
++    if (len && Name[len - 1] == '.')
++      len--;
++    if (len == 0)
++      s = "file";
++    else
++      s.SetFrom(Name, len);
++  }
++
++  bool GetNextName()
+   {
+-    UInt64 total = 0;
+-    FOR_VECTOR (i, Streams)
++#ifndef Z7_SFX
++    IsComplicated = false;
++#endif
++    unsigned i = Changed.Len();
++    for (;;)
+     {
+-      CSubStreamInfo &s = Streams[i];
+-      s.GlobalOffset = total;
+-      total += s.Size;
+-      s.LocalPos = 0;
++      wchar_t c = Changed[--i];
++#ifndef Z7_SFX
++      if (IsLatinPostfix())
++      {
++        if ((c | 0x20) != 'z')
++        {
++          c++;
++          Changed.ReplaceOneCharAtPos(i, c);
++          if ((c | 0x20) != 'z')
++            return true;
++          break;
++        }
++        c -= 'z' - 'a';
++        Changed.ReplaceOneCharAtPos(i, c);
++        if (i == 0)
++        {
++#if 0  // 1 : for debug
++          /* (return_code == false) will stop volume processing in caller.
++             But if (return_code) is not checked by caller, we must
++             increase length of (Changed) string to prevent infinite loop. */
++          SpecPos = -1;
++          Changed.InsertAtFront(Changed[0]);
++#endif
++          return false; // stop volume processing
++        }
++      }
++      else
++#endif
+       {
+-        // it was already set to start
+-        // RINOK(InStream_GetPos(s.Stream, s.LocalPos));
++        if (c != '9')
++        {
++          c++;
++          Changed.ReplaceOneCharAtPos(i, c);
++          if (c != '9')
++            return true;
++          break;
++        }
++        Changed.ReplaceOneCharAtPos(i, L'0');
++        if (i == 0)
++        {
++#ifndef Z7_SFX
++          SpecPos = -1;
++#endif
++          Changed.InsertAtFront(L'1');
++          return true;
++        }
+       }
+     }
+-    _totalLength = total;
+-    _pos = 0;
+-    _streamIndex = 0;
+-    return S_OK;
++
++#ifndef Z7_SFX
++    if ((int)i != SpecPos)
++      return true;
++    if (i == 0)
++      IsComplicated = true;
++    else
++      AddPostfix_2Chars();
++#endif
++    return true;
++  }
++
++  void GenerateName()
++  {
++    Name.DeleteFrom(ChangedPos);
++    Name += Changed;
+   }
+ };
+ 
++
+ /*
+ Z7_CLASS_IMP_COM_1(
+   COutMultiStream,
+--- a/src/CPP/7zip/Archive/LzmaHandler.cpp
++++ b/src/CPP/7zip/Archive/LzmaHandler.cpp
+@@ -185,7 +185,7 @@
+   UInt64 _unpackSize;
+   UInt64 _numStreams;
+ 
+-  void GetMethod(NCOM::CPropVariant &prop);
++  void GetMethod(NCOM::CPropVariant &prop) const;
+ 
+   unsigned GetHeaderSize() const { return 5 + 8 + (_lzma86 ? 1 : 0); }
+ public:
+@@ -228,7 +228,7 @@
+ }
+ 
+ 
+-static char * DictSizeToString(UInt32 val, char *s)
++static char * DictSizeToString(UInt32 val, char *s Z7_lifetimebound)
+ {
+   for (unsigned i = 0; i < 32; i++)
+     if (((UInt32)1 << i) == val)
+@@ -242,14 +242,14 @@
+   return s;
+ }
+ 
+-static char *AddProp32(char *s, const char *name, UInt32 v)
++static char *AddProp32(char *s Z7_lifetimebound, const char *name, UInt32 v)
+ {
+   *s++ = ':';
+   s = MyStpCpy(s, name);
+   return ::ConvertUInt32ToString(v, s);
+ }
+ 
+-void CHandler::GetMethod(NCOM::CPropVariant &prop)
++void CHandler::GetMethod(NCOM::CPropVariant &prop) const
+ {
+   if (!_stream)
+     return;
+@@ -270,7 +270,7 @@
+     UInt32 lp = d % 5;
+     if (lc != 3) s = AddProp32(s, "lc", lc);
+     if (lp != 0) s = AddProp32(s, "lp", lp);
+-    if (pb != 2) s = AddProp32(s, "pb", pb);
++    if (pb != 2) /* s = */ AddProp32(s, "pb", pb);
+   }
+   prop = sz;
+ }
+@@ -494,9 +494,10 @@
+ 
+   for (;;)
+   {
+-    lps->InSize = packSize;
+-    lps->OutSize = unpackSize;
+-    RINOK(lps->SetCur())
++    CLocalProgress *lps2 = lps.ClsPtr();
++    lps2->InSize = packSize;
++    lps2->OutSize = unpackSize;
++    RINOK(lps2->SetCur())
+ 
+     const UInt32 kBufSize = 1 + 5 + 8;
+     Byte buf[kBufSize];
+@@ -568,9 +569,7 @@
+     opResult = NExtract::NOperationResult::kDataAfterEnd;
+   else if (hres == S_FALSE)
+     opResult = NExtract::NOperationResult::kDataError;
+-  else if (hres == S_OK)
+-    opResult = NExtract::NOperationResult::kOK;
+-  else
++  else if (hres != S_OK)
+     return hres;
+ 
+   // outStream.Release();
+--- a/src/CPP/7zip/Archive/SplitHandler.cpp
++++ b/src/CPP/7zip/Archive/SplitHandler.cpp
+@@ -3,7 +3,6 @@
+ #include "StdAfx.h"
+ 
+ #include "../../Common/ComTry.h"
+-#include "../../Common/MyString.h"
+ 
+ #include "../../Windows/PropVariant.h"
+ 
+@@ -20,10 +19,34 @@
+ namespace NArchive {
+ namespace NSplit {
+ 
+-static const Byte kProps[] =
+-{
+-  kpidPath,
+-  kpidSize
++Z7_class_CHandler_final:
++  public IInArchive,
++  public IInArchiveGetStream,
++  public IInStream,
++  public CMyUnknownImp
++{
++  Z7_IFACES_IMP_UNK_4(
++      IInArchive,
++      IInArchiveGetStream,
++      ISequentialInStream,
++      IInStream)
++
++  unsigned _volIndex; // index of vol in last access for faster processing
++  UInt64 _pos;
++  UInt64 _totalSize;
++
++  struct CVol
++  {
++    CMyComPtr<IInStream> Stream;
++    UInt64 Size;
++    UInt64 GlobalOffset;
++    UInt64 LocalPos;
++  };
++
++  CObjectVector<CVol> Vols;
++  UString _subName;
++
++  HRESULT Open2(IInStream *stream, IArchiveOpenCallback *callback);
+ };
+ 
+ static const Byte kArcProps[] =
+@@ -32,16 +55,10 @@
+   kpidTotalPhySize
+ };
+ 
+-
+-Z7_CLASS_IMP_CHandler_IInArchive_1(
+-  IInArchiveGetStream
+-)
+-  CObjectVector<CMyComPtr<IInStream> > _streams;
+-  CRecordVector<UInt64> _sizes;
+-  UString _subName;
+-  UInt64 _totalSize;
+-
+-  HRESULT Open2(IInStream *stream, IArchiveOpenCallback *callback);
++static const Byte kProps[] =
++{
++  kpidPath,
++  kpidSize
+ };
+ 
+ IMP_IInArchive_Props
+@@ -53,70 +70,32 @@
+   switch (propID)
+   {
+     case kpidMainSubfile: prop = (UInt32)0; break;
+-    case kpidPhySize: if (!_sizes.IsEmpty()) prop = _sizes[0]; break;
++    case kpidPhySize: if (!Vols.IsEmpty()) prop = Vols[0].Size; break;
+     case kpidTotalPhySize: prop = _totalSize; break;
+-    case kpidNumVolumes: prop = (UInt32)_streams.Size(); break;
++    case kpidNumVolumes: prop = (UInt32)Vols.Size(); break;
+     default: break;
+   }
+   prop.Detach(value);
+   return S_OK;
+ }
+ 
+-struct CSeqName
++Z7_COM7F_IMF(CHandler::GetProperty(UInt32 /* index */, PROPID propID, PROPVARIANT *value))
+ {
+-  UString _unchangedPart;
+-  UString _changedPart;
+-  bool _splitStyle;
+-  
+-  bool GetNextName(UString &s)
++  COM_TRY_BEGIN
++  NCOM::CPropVariant prop;
++  switch (propID)
+   {
+-    {
+-      unsigned i = _changedPart.Len();
+-      for (;;)
+-      {
+-        wchar_t c = _changedPart[--i];
+-        
+-        if (_splitStyle)
+-        {
+-          if (c == 'z')
+-          {
+-            _changedPart.ReplaceOneCharAtPos(i, L'a');
+-            if (i == 0)
+-              return false;
+-            continue;
+-          }
+-          else if (c == 'Z')
+-          {
+-            _changedPart.ReplaceOneCharAtPos(i, L'A');
+-            if (i == 0)
+-              return false;
+-            continue;
+-          }
+-        }
+-        else
+-        {
+-          if (c == '9')
+-          {
+-            _changedPart.ReplaceOneCharAtPos(i, L'0');
+-            if (i == 0)
+-            {
+-              _changedPart.InsertAtFront(L'1');
+-              break;
+-            }
+-            continue;
+-          }
+-        }
+-
+-        c++;
+-        _changedPart.ReplaceOneCharAtPos(i, c);
+-        break;
+-      }
+-    }
+-    
+-    s = _unchangedPart + _changedPart;
+-    return true;
++    case kpidPath: prop = _subName; break;
++    case kpidSize:
++    case kpidPackSize:
++      prop = _totalSize;
++      break;
++    default: break;
+   }
+-};
++  prop.Detach(value);
++  return S_OK;
++  COM_TRY_END
++}
+ 
+ 
+ HRESULT CHandler::Open2(IInStream *stream, IArchiveOpenCallback *callback)
+@@ -124,121 +103,69 @@
+   Close();
+   if (!callback)
+     return S_FALSE;
+-
+-  Z7_DECL_CMyComPtr_QI_FROM(
+-      IArchiveOpenVolumeCallback,
+-      volumeCallback, callback)
++  Z7_DECL_CMyComPtr_QI_FROM(IArchiveOpenVolumeCallback, volumeCallback, callback)
+   if (!volumeCallback)
+     return S_FALSE;
+   
+-  UString name;
++  CSplitVolName seq;
+   {
+     NCOM::CPropVariant prop;
+     RINOK(volumeCallback->GetProperty(kpidName, &prop))
+     if (prop.vt != VT_BSTR)
+       return S_FALSE;
+-    name = prop.bstrVal;
++    seq.Name = prop.bstrVal;
+   }
+-  
+-  const int dotPos = name.ReverseFind_Dot();
+-  const UString prefix = name.Left((unsigned)(dotPos + 1));
+-  const UString ext = name.Ptr((unsigned)(dotPos + 1));
+-  UString ext2 = ext;
+-  ext2.MakeLower_Ascii();
+-  
+-  CSeqName seqName;
+-  
+-  unsigned numLetters = 2;
+-  bool splitStyle = false;
+-  
+-  if (ext2.Len() >= 2 && StringsAreEqual_Ascii(ext2.RightPtr(2), "aa"))
+-  {
+-    splitStyle = true;
+-    while (numLetters < ext2.Len())
+-    {
+-      if (ext2[ext2.Len() - numLetters - 1] != 'a')
+-        break;
+-      numLetters++;
+-    }
+-  }
+-  else if (ext2.Len() >= 2 && (
+-         StringsAreEqual_Ascii(ext2.RightPtr(2), "01")
+-      || StringsAreEqual_Ascii(ext2.RightPtr(2), "00")
+-      ))
+-  {
+-    while (numLetters < ext2.Len())
+-    {
+-      if (ext2[ext2.Len() - numLetters - 1] != '0')
+-        break;
+-      numLetters++;
+-    }
+-    if (numLetters != ext2.Len())
+-      return S_FALSE;
+-  }
+-  else
++  if (!seq.ParseName())
+     return S_FALSE;
+-  
+-  seqName._unchangedPart = prefix + ext.Left(ext2.Len() - numLetters);
+-  seqName._changedPart = ext.RightPtr(numLetters);
+-  seqName._splitStyle = splitStyle;
+-  
+-  if (prefix.Len() < 1)
+-    _subName = "file";
+-  else
+-    _subName.SetFrom(prefix, prefix.Len() - 1);
+-  
+-  UInt64 size;
++  seq.Generate_SubName(_subName);
+   {
+-    /*
+-    NCOM::CPropVariant prop;
+-    RINOK(volumeCallback->GetProperty(kpidSize, &prop))
+-    if (prop.vt != VT_UI8)
+-      return E_INVALIDARG;
+-    size = prop.uhVal.QuadPart;
+-    */
+-  }
+-  RINOK(InStream_AtBegin_GetSize(stream, size))
+-  
+-  _totalSize += size;
+-  _sizes.Add(size);
+-  _streams.Add(stream);
+-  
+-  {
+-    const UInt64 numFiles = _streams.Size();
+-    RINOK(callback->SetCompleted(&numFiles, NULL))
+-  }
+-  
+-  for (;;)
+-  {
+-    UString fullName;
+-    if (!seqName.GetNextName(fullName))
+-      break;
+     CMyComPtr<IInStream> nextStream;
+-    const HRESULT result = volumeCallback->GetStream(fullName, &nextStream);
+-    if (result == S_FALSE)
+-      break;
+-    if (result != S_OK)
+-      return result;
+-    if (!nextStream)
+-      break;
+-    RINOK(InStream_AtBegin_GetSize(nextStream, size))
+-    _totalSize += size;
+-    _sizes.Add(size);
+-    _streams.Add(nextStream);
++    do
+     {
+-      const UInt64 numFiles = _streams.Size();
+-      RINOK(callback->SetCompleted(&numFiles, NULL))
++      UInt64 size;
++      RINOK(InStream_AtBegin_GetSize(stream, size))
++      CVol &v = Vols.AddNew();
++      v.Stream = stream;
++      v.Size = size;
++      v.GlobalOffset = _totalSize;
++      v.LocalPos = 0;
++      _totalSize += size;
++      if (_totalSize < size)
++        return S_FALSE;
++      stream = NULL; // we don' want (stream) to point to (nextStream) object
++      {
++        const UInt64 numFiles = Vols.Size();
++        RINOK(callback->SetCompleted(&numFiles, NULL))
++      }
++      if (!seq.GetNextName())
++        break;
++      seq.GenerateName();
++      nextStream.Release();
++      HRESULT result = volumeCallback->GetStream(seq.Name, &nextStream);
++#ifndef Z7_SFX
++      if (result == S_FALSE && !nextStream && seq.IsComplicated)
++      {
++        seq.AddPostfix_2Chars();
++        seq.GenerateName();
++        result = volumeCallback->GetStream(seq.Name, &nextStream);
++      }
++#endif
++      if (result != S_OK && result != S_FALSE)
++        return result;
++      stream = nextStream;
+     }
++    while (stream);
+   }
+ 
+-  if (_streams.Size() == 1)
+-  {
+-    if (splitStyle)
++#ifndef Z7_SFX
++  if (Vols.Size() == 1) // for single volume case, we allow only 7zip_style files with dot : "*.001"
++    if (seq.ChangedPos == 0 || seq.IsLatinPostfix())
+       return S_FALSE;
+-  }
++#endif
+   return S_OK;
+ }
+ 
++
+ Z7_COM7F_IMF(CHandler::Open(IInStream *stream, const UInt64 *, IArchiveOpenCallback *callback))
+ {
+   COM_TRY_BEGIN
+@@ -251,32 +178,17 @@
+ 
+ Z7_COM7F_IMF(CHandler::Close())
+ {
++  _volIndex = 0;
++  _pos = 0;
+   _totalSize = 0;
+   _subName.Empty();
+-  _streams.Clear();
+-  _sizes.Clear();
++  Vols.Clear();
+   return S_OK;
+ }
+ 
+ Z7_COM7F_IMF(CHandler::GetNumberOfItems(UInt32 *numItems))
+ {
+-  *numItems = _streams.IsEmpty() ? 0 : 1;
+-  return S_OK;
+-}
+-
+-Z7_COM7F_IMF(CHandler::GetProperty(UInt32 /* index */, PROPID propID, PROPVARIANT *value))
+-{
+-  NCOM::CPropVariant prop;
+-  switch (propID)
+-  {
+-    case kpidPath: prop = _subName; break;
+-    case kpidSize:
+-    case kpidPackSize:
+-      prop = _totalSize;
+-      break;
+-    default: break;
+-  }
+-  prop.Detach(value);
++  *numItems = Vols.IsEmpty() ? 0 : 1;
+   return S_OK;
+ }
+ 
+@@ -289,38 +201,104 @@
+   if (numItems != (UInt32)(Int32)-1 && (numItems != 1 || indices[0] != 0))
+     return E_INVALIDARG;
+ 
+-  UInt64 currentTotalSize = 0;
+   RINOK(extractCallback->SetTotal(_totalSize))
+-  CMyComPtr<ISequentialOutStream> outStream;
+-  const Int32 askMode = testMode ?
+-      NExtract::NAskMode::kTest :
+-      NExtract::NAskMode::kExtract;
+-  RINOK(extractCallback->GetStream(0, &outStream, askMode))
+-  if (!testMode && !outStream)
+-    return S_OK;
+-  RINOK(extractCallback->PrepareOperation(askMode))
+-  
+-  NCompress::CCopyCoder *copyCoderSpec = new NCompress::CCopyCoder;
+-  CMyComPtr<ICompressCoder> copyCoder = copyCoderSpec;
++  int opRes;
++  {
++    CMyComPtr<ISequentialOutStream> outStream;
++    const Int32 askMode = testMode ?
++        NExtract::NAskMode::kTest :
++        NExtract::NAskMode::kExtract;
++    RINOK(extractCallback->GetStream(0, &outStream, askMode))
++    if (!testMode && !outStream)
++      return S_OK;
++    RINOK(extractCallback->PrepareOperation(askMode))
++        
++    NCompress::CCopyCoderBase copyCoder;
++    CMyComPtr2_Create<ICompressProgressInfo, CLocalProgress> lps;
++    lps->Init(extractCallback, false);
++      
++    opRes = NExtract::NOperationResult::kOK;
++    FOR_VECTOR(i, Vols)
++    {
++      CVol &v = Vols[i];
++      v.LocalPos = (UInt64)0-1;
++      IInStream *inStream = v.Stream;
++      RINOK(InStream_SeekToBegin(inStream))
++      RINOK(copyCoder.Code(inStream, outStream, NULL, lps))
++      if (copyCoder.TotalSize != v.Size)
++        opRes = NExtract::NOperationResult::kDataError;
++      CLocalProgress *lps2 = lps.ClsPtr();
++      lps2->InSize += copyCoder.TotalSize;
++      lps2->OutSize = lps2->InSize;
++      RINOK(lps2->SetCur())
++    }
++  }
++  return extractCallback->SetOperationResult(opRes);
++  COM_TRY_END
++}
+ 
+-  CLocalProgress *lps = new CLocalProgress;
+-  CMyComPtr<ICompressProgressInfo> progress = lps;
+-  lps->Init(extractCallback, false);
+ 
+-  for (unsigned i = 0;; i++)
++Z7_COM7F_IMF(CHandler::Read(void *data, UInt32 size, UInt32 *processedSize))
++{
++  if (processedSize)
++    *processedSize = 0;
++  if (size == 0)
++    return S_OK;
++  if (_pos >= _totalSize)
++    return S_OK;
++
++  unsigned left = 0, mid = _volIndex, right = Vols.Size();
++  for (;;)
+   {
+-    lps->InSize = lps->OutSize = currentTotalSize;
+-    RINOK(lps->SetCur())
+-    if (i == _streams.Size())
+-      break;
+-    IInStream *inStream = _streams[i];
+-    RINOK(InStream_SeekToBegin(inStream))
+-    RINOK(copyCoder->Code(inStream, outStream, NULL, NULL, progress))
+-    currentTotalSize += copyCoderSpec->TotalSize;
++    CVol &v = Vols[mid];
++    if (_pos < v.GlobalOffset)
++      right = mid;
++    else
++    {
++      const UInt64 localPos = _pos - v.GlobalOffset;
++      if (localPos < v.Size)
++      {
++        _volIndex = mid;
++        if (localPos != v.LocalPos)
++          RINOK(v.Stream->Seek((Int64)localPos, STREAM_SEEK_SET, &v.LocalPos))
++        {
++          const UInt64 rem = v.Size - localPos;
++          if (size > rem)
++            size = (UInt32)rem;
++        }
++        UInt32 sizeProc = 0;
++        const HRESULT result = v.Stream->Read(data, size, &sizeProc);
++        size = sizeProc;
++        _pos += size;
++        if (result == S_OK)
++          v.LocalPos += size;
++        else
++          v.LocalPos = (UInt64)0-1;
++        if (processedSize)
++          *processedSize = size;
++        return result;
++      }
++      left = mid + 1;
++    }
++    mid = (left + right) / 2;
+   }
+-  outStream.Release();
+-  return extractCallback->SetOperationResult(NExtract::NOperationResult::kOK);
+-  COM_TRY_END
++}
++  
++Z7_COM7F_IMF(CHandler::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition))
++{
++  switch (seekOrigin)
++  {
++    case STREAM_SEEK_SET: break;
++    case STREAM_SEEK_CUR: offset += _pos; break;
++    case STREAM_SEEK_END: offset += _totalSize; break;
++    default: return STG_E_INVALIDFUNCTION;
++  }
++  if (offset < 0)
++    return HRESULT_WIN32_ERROR_NEGATIVE_SEEK;
++  _pos = (UInt64)offset;
++  if (newPosition)
++    *newPosition = (UInt64)offset;
++  return S_OK;
+ }
+ 
+ Z7_COM7F_IMF(CHandler::GetStream(UInt32 index, ISequentialInStream **stream))
+@@ -329,16 +307,17 @@
+   if (index != 0)
+     return E_INVALIDARG;
+   *stream = NULL;
+-  CMultiStream *streamSpec = new CMultiStream;
+-  CMyComPtr<ISequentialInStream> streamTemp = streamSpec;
+-  FOR_VECTOR (i, _streams)
+-  {
+-    CMultiStream::CSubStreamInfo subStreamInfo;
+-    subStreamInfo.Stream = _streams[i];
+-    subStreamInfo.Size = _sizes[i];
+-    streamSpec->Streams.Add(subStreamInfo);
++  _volIndex = 0;
++  _pos = 0;
++  /*
++  FOR_VECTOR (i, Vols)
++  {
++    CVol &v = Vols[i];
++    v.LocalPos = 0;
++    RINOK(InStream_SeekToBegin(v.Stream))
+   }
+-  streamSpec->Init();
++  */
++  CMyComPtr<ISequentialInStream> streamTemp = this;
+   *stream = streamTemp.Detach();
+   return S_OK;
+   COM_TRY_END
+--- a/src/CPP/7zip/Archive/XzHandler.cpp
++++ b/src/CPP/7zip/Archive/XzHandler.cpp
+@@ -86,7 +86,7 @@
+   CXzStatInfo _stat;    // it's stat from backward parsing
+   CXzStatInfo _stat2;   // it's data from forward parsing, if the decoder was called
+ 
+-  const CXzStatInfo *GetStat() const
++  const CXzStatInfo *GetStat() const Z7_lifetimebound
+   {
+     if (_stat_defined) return &_stat;
+     if (_stat2_defined) return &_stat2;
+--- a/src/CPP/7zip/Common/CreateCoder.cpp
++++ b/src/CPP/7zip/Common/CreateCoder.cpp
+@@ -2,7 +2,7 @@
+ 
+ #include "StdAfx.h"
+ 
+-#include "../../Windows/Defs.h"
++#include "../../Windows/WinDefs.h"
+ #include "../../Windows/PropVariant.h"
+ 
+ #include "CreateCoder.h"
+--- a/src/CPP/7zip/Common/FileStreams.cpp
++++ b/src/CPP/7zip/Common/FileStreams.cpp
+@@ -882,7 +882,7 @@
+ 
+   UInt32 realProcessedSize;
+   BOOL res = TRUE;
+-  if (size > 0)
++  if (size)
+   {
+     // Seems that Windows doesn't like big amounts writing to stdout.
+     // So we limit portions by 32KB.
+@@ -892,8 +892,8 @@
+     res = ::WriteFile(GetStdHandle(STD_OUTPUT_HANDLE),
+         data, sizeTemp, (DWORD *)&realProcessedSize, NULL);
+     _size += realProcessedSize;
+-    size -= realProcessedSize;
+-    data = (const void *)((const Byte *)data + realProcessedSize);
++    // size -= realProcessedSize;
++    // data = (const void *)((const Byte *)data + realProcessedSize);
+     if (processedSize)
+       *processedSize += realProcessedSize;
+   }
+--- a/src/CPP/7zip/Common/FilterCoder.cpp
++++ b/src/CPP/7zip/Common/FilterCoder.cpp
+@@ -36,9 +36,14 @@
+   Some filters (BCJ and others) don't process data at the end of stream in some cases.
+   So the encoder and decoder write such last bytes without change.
+ 
+-  Most filters process all data, if we send aligned size to filter.
+-     But  BCJ filter can process up 4 bytes less than sent size.
+-     And ARMT filter can process    2 bytes less than sent size.
++  Filters can process less data than is sent:
++  filter: max unprocessed size
++          aligned unaligned (data size)
++  ARM64 :   0         3
++  IA64  :   0        15
++  BCJ   :   4         4
++  ARMT  :   2         3
++  RISCV :   6         7
+ */
+ 
+ #if !defined(LIBPLZMA)
+@@ -53,8 +58,8 @@
+   UInt32 size = MyMin(_inBufSize, _outBufSize);
+   /* minimal bufSize is 16 bytes for AES and IA64 filter.
+      bufSize for AES must be aligned for 16 bytes.
+-     We use (1 << 12) min size to support future aligned filters. */
+-  const UInt32 kMinSize = 1 << 12;
++     We use (1 << 16) to support some external filters that require 64 KB buffer. */
++  const UInt32 kMinSize = 1 << 16;
+   size &= ~(UInt32)(kMinSize - 1);
+   if (size < kMinSize)
+     size = kMinSize;
+--- a/src/CPP/7zip/Common/InBuffer.cpp
++++ b/src/CPP/7zip/Common/InBuffer.cpp
+@@ -66,7 +66,10 @@
+   ErrorCode = result;
+   #else
+   if (result != S_OK)
++  {
++    _wasFinished = true;
+     throw CInBufferException(result);
++  }
+   #endif
+   _bufLim = _buf + processed;
+   _wasFinished = (processed == 0);
+--- a/src/CPP/7zip/Common/LimitedStreams.cpp
++++ b/src/CPP/7zip/Common/LimitedStreams.cpp
+@@ -80,7 +80,7 @@
+   CMyComPtr<ISequentialInStream> streamTemp = streamSpec;
+   streamSpec->SetStream(inStream);
+   RINOK(streamSpec->InitAndSeek(pos, size))
+-  streamSpec->SeekToStart();
++  // streamSpec->SeekToStart();
+   *resStream = streamTemp.Detach();
+   return S_OK;
+ }
+@@ -105,18 +105,20 @@
+     const UInt32 virtBlock = (UInt32)(_virtPos >> BlockSizeLog);
+     const UInt32 offsetInBlock = (UInt32)_virtPos & (blockSize - 1);
+     const UInt32 phyBlock = Vector[virtBlock];
+-    
+-    UInt64 newPos = StartOffset + ((UInt64)phyBlock << BlockSizeLog) + offsetInBlock;
++    const UInt64 newPos = StartOffset + ((UInt64)phyBlock << BlockSizeLog) + offsetInBlock;
+     if (newPos != _physPos)
+     {
+       _physPos = newPos;
+       RINOK(SeekToPhys())
+     }
+-
+     _curRem = blockSize - offsetInBlock;
+-    
+-    for (unsigned i = 1; i < 64 && (virtBlock + i) < (UInt32)Vector.Size() && phyBlock + i == Vector[virtBlock + i]; i++)
+-      _curRem += (UInt32)1 << BlockSizeLog;
++    for (unsigned i = 1; i < 64
++        && _curRem < size
++        && _curRem < ((UInt32)1 << 31) - blockSize
++        && virtBlock + i < Vector.Size()
++        && phyBlock + i == Vector[virtBlock + i]
++        ; i++)
++      _curRem += blockSize;
+   }
+   
+   if (size > _curRem)
+--- a/src/CPP/7zip/Common/LimitedStreams.h
++++ b/src/CPP/7zip/Common/LimitedStreams.h
+@@ -14,18 +14,18 @@
+   CLimitedSequentialInStream
+   , ISequentialInStream
+ )
++  bool _wasFinished;
+   CMyComPtr<ISequentialInStream> _stream;
+   UInt64 _size;
+   UInt64 _pos;
+-  bool _wasFinished;
+ public:
+   void SetStream(ISequentialInStream *stream) { _stream = stream; }
+   void ReleaseStream() { _stream.Release(); }
+   void Init(UInt64 streamSize)
+   {
++    _wasFinished = false;
+     _size = streamSize;
+     _pos = 0;
+-    _wasFinished = false;
+   }
+   UInt64 GetSize() const { return _pos; }
+   UInt64 GetRem() const { return _size - _pos; }
+@@ -53,7 +53,7 @@
+     _size = size;
+     return SeekToPhys();
+   }
+-  HRESULT SeekToStart() { return Seek(0, STREAM_SEEK_SET, NULL); }
++  // HRESULT SeekToStart() { _virtPos = 0; }
+ };
+ 
+ HRESULT CreateLimitedInStream(IInStream *inStream, UInt64 pos, UInt64 size, ISequentialInStream **resStream);
+@@ -79,9 +79,9 @@
+     _curRem = 0;
+     _virtPos = 0;
+     _physPos = StartOffset;
+-    if (Vector.Size() > 0)
++    if (Vector.Size())
+     {
+-      _physPos = StartOffset + (Vector[0] << BlockSizeLog);
++      _physPos = StartOffset + ((UInt64)Vector[0] << BlockSizeLog);
+       return SeekToPhys();
+     }
+     return S_OK;
+@@ -105,9 +105,9 @@
+ Z7_CLASS_IMP_IInStream(
+   CExtentsStream
+ )
++  unsigned _prevExtentIndex;
+   UInt64 _virtPos;
+   UInt64 _phyPos;
+-  unsigned _prevExtentIndex;
+ public:
+   CMyComPtr<IInStream> Stream;
+   CRecordVector<CSeekExtent> Extents;
+@@ -115,9 +115,9 @@
+   void ReleaseStream() { Stream.Release(); }
+   void Init()
+   {
++    _prevExtentIndex = 0;
+     _virtPos = 0;
+     _phyPos = (UInt64)0 - 1; // we need Seek() for Stream
+-    _prevExtentIndex = 0;
+   }
+ };
+ 
+@@ -127,10 +127,10 @@
+   CLimitedSequentialOutStream
+   , ISequentialOutStream
+ )
+-  CMyComPtr<ISequentialOutStream> _stream;
+-  UInt64 _size;
+   bool _overflow;
+   bool _overflowIsAllowed;
++  CMyComPtr<ISequentialOutStream> _stream;
++  UInt64 _size;
+ public:
+   void SetStream(ISequentialOutStream *stream) { _stream = stream; }
+   void ReleaseStream() { _stream.Release(); }
+--- a/src/CPP/7zip/Common/MethodProps.h
++++ b/src/CPP/7zip/Common/MethodProps.h
+@@ -6,8 +6,7 @@
+ #include "../../Common/MyString.h"
+ #include "../../Common/Defs.h"
+ 
+-#include "../../Windows/Defs.h"
+-
++#include "../../Windows/WinDefs.h"
+ #include "../../Windows/PropVariant.h"
+ 
+ #include "../ICoder.h"
+--- a/src/CPP/7zip/Common/PropId.cpp
++++ b/src/CPP/7zip/Common/PropId.cpp
+@@ -3,10 +3,8 @@
+ #include "StdAfx.h"
+ 
+ #include "../../Common/MyWindows.h"
+-
+ #include "../PropID.h"
+ 
+-// VARTYPE
+ const Byte k7z_PROPID_To_VARTYPE[kpid_NUM_DEFINED] =
+ {
+   VT_EMPTY,
+@@ -84,7 +82,7 @@
+   VT_UI4,
+   VT_BSTR,
+   VT_UI8,
+-  VT_UI8,
++  VT_UI4, // kpidNumAltStreams
+   VT_UI8,
+   VT_UI8,
+   VT_UI8,
+--- a/src/CPP/7zip/Compress/BcjCoder.h
++++ b/src/CPP/7zip/Compress/BcjCoder.h
+@@ -25,7 +25,7 @@
+   UInt32 _state;
+   z7_Func_BranchConvSt _convFunc;
+ public:
+-  CCoder2(z7_Func_BranchConvSt convFunc):
++  CCoder2(z7_Func_BranchConvSt convFunc Z7_lifetimebound):
+       _pc(0),
+       _state(Z7_BRANCH_CONV_ST_X86_STATE_INIT_VAL),
+       _convFunc(convFunc)
+--- a/src/CPP/7zip/Compress/BranchMisc.h
++++ b/src/CPP/7zip/Compress/BranchMisc.h
+@@ -18,7 +18,7 @@
+   UInt32 _pc;
+   z7_Func_BranchConv BraFunc;
+ public:
+-  CCoder(z7_Func_BranchConv bra): _pc(0), BraFunc(bra) {}
++  CCoder(z7_Func_BranchConv bra Z7_lifetimebound): _pc(0), BraFunc(bra) {}
+ };
+ 
+ #ifndef Z7_EXTRACT_ONLY
+@@ -34,7 +34,7 @@
+   UInt32 _alignment;
+   z7_Func_BranchConv BraFunc;
+ public:
+-  CEncoder(z7_Func_BranchConv bra, UInt32 alignment):
++  CEncoder(z7_Func_BranchConv bra Z7_lifetimebound, UInt32 alignment):
+       _pc(0), _pc_Init(0), _alignment(alignment), BraFunc(bra) {}
+ };
+ 
+@@ -50,7 +50,7 @@
+   UInt32 _alignment;
+   z7_Func_BranchConv BraFunc;
+ public:
+-  CDecoder(z7_Func_BranchConv bra, UInt32 alignment):
++  CDecoder(z7_Func_BranchConv bra Z7_lifetimebound, UInt32 alignment):
+       _pc(0), _pc_Init(0), _alignment(alignment), BraFunc(bra) {}
+ };
+ 
+--- a/src/CPP/7zip/Compress/CodecExports.cpp
++++ b/src/CPP/7zip/Compress/CodecExports.cpp
+@@ -8,7 +8,7 @@
+ #include "../../Common/ComTry.h"
+ #include "../../Common/MyCom.h"
+ 
+-#include "../../Windows/Defs.h"
++#include "../../Windows/WinDefs.h"
+ #include "../../Windows/PropVariant.h"
+ 
+ #include "../ICoder.h"
+--- a/src/CPP/7zip/Compress/CopyCoder.cpp
++++ b/src/CPP/7zip/Compress/CopyCoder.cpp
+@@ -10,20 +10,14 @@
+ 
+ static const UInt32 kBufSize = 1 << 17;
+ 
+-CCopyCoder::~CCopyCoder()
++CCopyCoderBase::~CCopyCoderBase() throw()
+ {
+   ::MidFree(_buf);
+ }
+ 
+-Z7_COM7F_IMF(CCopyCoder::SetFinishMode(UInt32 /* finishMode */))
+-{
+-  return S_OK;
+-}
+-
+-Z7_COM7F_IMF(CCopyCoder::Code(ISequentialInStream *inStream,
+-    ISequentialOutStream *outStream,
+-    const UInt64 * /* inSize */, const UInt64 *outSize,
+-    ICompressProgressInfo *progress))
++Z7_NO_INLINE
++HRESULT CCopyCoderBase::Code(ISequentialInStream *inStream, ISequentialOutStream *outStream,
++    const UInt64 *outSize, ICompressProgressInfo *progress) throw()
+ {
+   if (!_buf)
+   {
+@@ -107,10 +101,24 @@
+   }
+ }
+ 
++
++Z7_COM7F_IMF(CCopyCoder::Code(ISequentialInStream *inStream,
++    ISequentialOutStream *outStream,
++    const UInt64 * /* inSize */, const UInt64 *outSize,
++    ICompressProgressInfo *progress))
++{
++  return Coder.Code(inStream, outStream, outSize, progress);
++}
++
++Z7_COM7F_IMF(CCopyCoder::SetFinishMode(UInt32 /* finishMode */))
++{
++  return S_OK;
++}
++
+ Z7_COM7F_IMF(CCopyCoder::SetInStream(ISequentialInStream *inStream))
+ {
+   _inStream = inStream;
+-  TotalSize = 0;
++  Coder.TotalSize = 0;
+   return S_OK;
+ }
+ 
+@@ -124,7 +132,7 @@
+ {
+   UInt32 realProcessedSize = 0;
+   HRESULT res = _inStream->Read(data, size, &realProcessedSize);
+-  TotalSize += realProcessedSize;
++  Coder.TotalSize += realProcessedSize;
+   if (processedSize)
+     *processedSize = realProcessedSize;
+   return res;
+@@ -132,22 +140,22 @@
+ 
+ Z7_COM7F_IMF(CCopyCoder::GetInStreamProcessedSize(UInt64 *value))
+ {
+-  *value = TotalSize;
++  *value = Coder.TotalSize;
+   return S_OK;
+ }
+ 
+-HRESULT CopyStream(ISequentialInStream *inStream, ISequentialOutStream *outStream, ICompressProgressInfo *progress)
++
++HRESULT CopyStream(ISequentialInStream *inStream, ISequentialOutStream *outStream, ICompressProgressInfo *progress) throw()
+ {
+-  CMyComPtr<ICompressCoder> copyCoder = new CCopyCoder;
+-  return copyCoder->Code(inStream, outStream, NULL, NULL, progress);
++  CCopyCoderBase copyCoder;
++  return copyCoder.Code(inStream, outStream, NULL, progress);
+ }
+ 
+-HRESULT CopyStream_ExactSize(ISequentialInStream *inStream, ISequentialOutStream *outStream, UInt64 size, ICompressProgressInfo *progress)
++HRESULT CopyStream_ExactSize(ISequentialInStream *inStream, ISequentialOutStream *outStream, UInt64 size, ICompressProgressInfo *progress) throw()
+ {
+-  NCompress::CCopyCoder *copyCoderSpec = new NCompress::CCopyCoder;
+-  CMyComPtr<ICompressCoder> copyCoder = copyCoderSpec;
+-  RINOK(copyCoder->Code(inStream, outStream, NULL, &size, progress))
+-  return copyCoderSpec->TotalSize == size ? S_OK : E_FAIL;
++  CCopyCoderBase copyCoder;
++  RINOK(copyCoder.Code(inStream, outStream, &size, progress))
++  return copyCoder.TotalSize == size ? S_OK : E_FAIL;
+ }
+ 
+ }
+--- a/src/CPP/7zip/Compress/CopyCoder.h
++++ b/src/CPP/7zip/Compress/CopyCoder.h
+@@ -9,6 +9,19 @@
+ 
+ namespace NCompress {
+ 
++class CCopyCoderBase
++{
++  Byte *_buf;
++public:
++  UInt64 TotalSize;
++  
++  CCopyCoderBase(): _buf(NULL), TotalSize(0) {}
++  ~CCopyCoderBase() throw();
++
++  HRESULT Code(ISequentialInStream *inStream, ISequentialOutStream *outStream,
++      const UInt64 *outSize, ICompressProgressInfo *progress) throw();
++};
++
+ Z7_CLASS_IMP_COM_5(
+   CCopyCoder
+   , ICompressCoder
+@@ -17,17 +30,12 @@
+   , ICompressSetFinishMode
+   , ICompressGetInStreamProcessedSize
+ )
+-  Byte *_buf;
++  CCopyCoderBase Coder;
+   CMyComPtr<ISequentialInStream> _inStream;
+-public:
+-  UInt64 TotalSize;
+-  
+-  CCopyCoder(): _buf(NULL), TotalSize(0) {}
+-  ~CCopyCoder();
+ };
+ 
+-HRESULT CopyStream(ISequentialInStream *inStream, ISequentialOutStream *outStream, ICompressProgressInfo *progress);
+-HRESULT CopyStream_ExactSize(ISequentialInStream *inStream, ISequentialOutStream *outStream, UInt64 size, ICompressProgressInfo *progress);
++HRESULT CopyStream(ISequentialInStream *inStream, ISequentialOutStream *outStream, ICompressProgressInfo *progress) throw();
++HRESULT CopyStream_ExactSize(ISequentialInStream *inStream, ISequentialOutStream *outStream, UInt64 size, ICompressProgressInfo *progress) throw();
+ 
+ }
+ 
+--- a/src/CPP/7zip/Compress/LzmaEncoder.cpp
++++ b/src/CPP/7zip/Compress/LzmaEncoder.cpp
+@@ -43,7 +43,7 @@
+ 
+ static inline wchar_t GetLowCharFast(wchar_t c)
+ {
+-  return c |= 0x20;
++  return (wchar_t)(c | 0x20);
+ }
+ 
+ static int ParseMatchFinder(const wchar_t *s, int *btMode, int *numHashBytes)
+--- a/src/CPP/7zip/Crypto/RandGen.cpp
++++ b/src/CPP/7zip/Crypto/RandGen.cpp
+@@ -99,6 +99,7 @@
+     const HMODULE hModule = ::LoadLibrary(TEXT("advapi32.dll"));
+     if (hModule)
+     {
++      Z7_DIAGNOSTIC_IGNORE_CAST_FUNCTION
+       // SystemFunction036() is real name of RtlGenRandom() function
+       const
+       Func_RtlGenRandom
+--- a/src/CPP/Common/AutoPtr.h
++++ b/src/CPP/Common/AutoPtr.h
+@@ -24,7 +24,7 @@
+     _p = p;
+   }
+ public:
+-  CMyUniquePtr(T *p = NULL) : _p(p) {}
++  CMyUniquePtr(T *p Z7_lifetimebound = NULL) : _p(p) {}
+   ~CMyUniquePtr() { delete _p; }
+   T& operator*() const { return *_p; }
+   T* operator->() const { return _p; }
+--- a/src/CPP/Common/Common0.h
++++ b/src/CPP/Common/Common0.h
+@@ -94,6 +94,17 @@
+ #endif
+ */
+ 
++#if defined(__has_cpp_attribute)
++  #if __has_cpp_attribute(msvc::lifetimebound)
++    #define Z7_lifetimebound [[msvc::lifetimebound]]
++  #elif __has_cpp_attribute(clang::lifetimebound)
++    #define Z7_lifetimebound [[clang::lifetimebound]]
++  #else
++    #define Z7_lifetimebound
++  #endif
++#else
++  #define Z7_lifetimebound
++#endif
+ 
+ #if defined(__clang__)
+ 
+@@ -162,7 +173,7 @@
+    So we can use Z7_ARRAY_NEW macro instead of new[] operator. */
+ 
+ #if defined(_MSC_VER) && (_MSC_VER == 1200) && !defined(_WIN64)
+-  #define Z7_ARRAY_NEW(p, T, size)  p = new T[((size) > 0xFFFFFFFFu / sizeof(T)) ? 0xFFFFFFFFu / sizeof(T) : (size)];
++  #define Z7_ARRAY_NEW(p, T, size)  p = new T[((size) > (0xFFFFFFFFu - 0x7fu) / sizeof(T)) ? (0xFFFFFFFFu - 0x7fu) / sizeof(T) : (size)];
+ #else
+   #define Z7_ARRAY_NEW(p, T, size)  p = new T[size];
+ #endif
+--- a/src/CPP/Common/IntToString.h
++++ b/src/CPP/Common/IntToString.h
+@@ -7,11 +7,11 @@
+ 
+ // return: the pointer to the "terminating" null character after written characters
+ 
+-char * ConvertUInt32ToString(UInt32 value, char *s) throw();
+-char * ConvertUInt64ToString(UInt64 value, char *s) throw();
++char * ConvertUInt32ToString(UInt32 value, char *s Z7_lifetimebound) throw();
++char * ConvertUInt64ToString(UInt64 value, char *s Z7_lifetimebound) throw();
+ 
+-wchar_t * ConvertUInt32ToString(UInt32 value, wchar_t *s) throw();
+-wchar_t * ConvertUInt64ToString(UInt64 value, wchar_t *s) throw();
++wchar_t * ConvertUInt32ToString(UInt32 value, wchar_t *s Z7_lifetimebound) throw();
++wchar_t * ConvertUInt64ToString(UInt64 value, wchar_t *s Z7_lifetimebound) throw();
+ void ConvertInt64ToString(Int64 value, char *s) throw();
+ void ConvertInt64ToString(Int64 value, wchar_t *s) throw();
+ 
+@@ -45,8 +45,8 @@
+ // void ConvertUInt32ToHex8Digits(UInt32 value, wchar_t *s) throw();
+ 
+ // use RawLeGuid only for RAW bytes that contain stored GUID as Little-endian.
+-char *RawLeGuidToString(const Byte *guid, char *s) throw();
+-char *RawLeGuidToString_Braced(const Byte *guid, char *s) throw();
++char *RawLeGuidToString(const Byte *guid, char *s Z7_lifetimebound) throw();
++char *RawLeGuidToString_Braced(const Byte *guid, char *s Z7_lifetimebound) throw();
+ 
+ void ConvertDataToHex_Lower(char *dest, const Byte *src, size_t size) throw();
+ void ConvertDataToHex_Upper(char *dest, const Byte *src, size_t size) throw();
+--- a/src/CPP/Common/MyCom.h
++++ b/src/CPP/Common/MyCom.h
+@@ -21,16 +21,16 @@
+ #else
+   CMyComPtr(): _p(NULL) {}
+ #endif // LIBPLZMA
+-  CMyComPtr(T* p) throw() { if ((_p = p) != NULL) p->AddRef(); }
++  CMyComPtr(T* p Z7_lifetimebound) throw() { if ((_p = p) != NULL) p->AddRef(); }
+   CMyComPtr(const CMyComPtr<T>& lp) throw() { if ((_p = lp._p) != NULL) _p->AddRef(); }
+   ~CMyComPtr() { if (_p) _p->Release(); }
+   void Release() { if (_p) { _p->Release(); _p = NULL; } }
+   operator T*() const {  return (T*)_p;  }
+   T* Interface() const {  return (T*)_p;  }
+   // T& operator*() const {  return *_p; }
+-  T** operator&() { return &_p; }
++  T** operator&() Z7_lifetimebound { return &_p; }
+   T* operator->() const { return _p; }
+-  T* operator=(T* p)
++  T* operator=(T* p Z7_lifetimebound)
+   {
+     if (p)
+       p->AddRef();
+@@ -203,7 +203,7 @@
+ public:
+   CMyComBSTR(): m_str(NULL) {}
+   ~CMyComBSTR() { ::SysFreeString(m_str); }
+-  BSTR* operator&() { return &m_str; }
++  BSTR* operator&() Z7_lifetimebound { return &m_str; }
+   operator LPCOLESTR() const { return m_str; }
+   // operator bool() const { return m_str != NULL; }
+   // bool operator!() const { return m_str == NULL; }
+@@ -697,6 +697,6 @@
+   Z7_IFACES_IMP_UNK_2(ISequentialInStream, IInStream) \
+ 
+ 
+-#define k_My_HRESULT_WritingWasCut 0x20000010
++#define k_My_HRESULT_WritingWasCut ((HRESULT)0x20000010)
+ 
+ #endif
+--- a/src/CPP/Common/MyString.h
++++ b/src/CPP/Common/MyString.h
+@@ -64,10 +64,10 @@
+ 
+ inline void MyStringCopy(char *dest, const char *src)
+ {
+-  while ((*dest++ = *src++) != 0);
++  do {} while ((*dest++ = *src++) != 0);
+ }
+ 
+-inline char *MyStpCpy(char *dest, const char *src)
++inline char *MyStpCpy(char *dest Z7_lifetimebound, const char *src)
+ {
+   for (;;)
+   {
+@@ -96,7 +96,7 @@
+ 
+ inline void MyStringCopy(wchar_t *dest, const wchar_t *src)
+ {
+-  while ((*dest++ = *src++) != 0);
++  do {} while ((*dest++ = *src++) != 0);
+ }
+ 
+ inline void MyStringCat(wchar_t *dest, const wchar_t *src)
+--- a/src/CPP/Common/MyVector.h
++++ b/src/CPP/Common/MyVector.h
+@@ -48,6 +48,23 @@
+     ReAllocForNewCapacity(_capacity + add);
+   }
+ 
++  void Reserve_for_AddSize(const unsigned addSize)
++  {
++    const unsigned size = Size();
++    const unsigned rem = k_VectorSizeMax - size;
++    if (size > k_VectorSizeMax || addSize > rem)
++      throw 2021;
++    if (size + addSize > _capacity)
++    {
++      unsigned extra = size >> 2;
++      if (extra < addSize)
++          extra = addSize;
++      if (extra > rem)
++          extra = rem;
++      ReAllocForNewCapacity(size + extra);
++    }
++  }
++
+   CRecordVector(): _items(NULL), _size(0), _capacity(0) {}
+   
+   CRecordVector(const CRecordVector &v): _items(NULL), _size(0), _capacity(0)
+@@ -92,6 +109,21 @@
+     _size = newSize;
+   }
+ 
++  void ChangeSize_KeepData_plus_AdditionalReserve(const unsigned newSize)
++  {
++    if (newSize > _capacity)
++    {
++      if (newSize > k_VectorSizeMax)
++        throw 2021;
++      const unsigned rem = k_VectorSizeMax - newSize;
++      unsigned add = newSize >> 2;
++      if (add > rem)
++          add = rem;
++      ReAllocForNewCapacity(newSize + add);
++    }
++    _size = newSize;
++  }
++
+   void ClearAndReserve(unsigned newCapacity)
+   {
+     Clear();
+@@ -201,12 +233,9 @@
+     const unsigned size = v.Size();
+     if (size != 0)
+     {
+-      if (_size >= k_VectorSizeMax || size > k_VectorSizeMax - _size)
+-        throw 2021;
+-      const unsigned newSize = _size + size;
+-      Reserve(newSize);
++      Reserve_for_AddSize(size);
+       memcpy(_items + _size, v._items, (size_t)size * sizeof(T));
+-      _size = newSize;
++      _size += size;
+     }
+     return *this;
+   }
+@@ -221,7 +250,7 @@
+   }
+ 
+   /*
+-  unsigned Add2(const T &item)
++  unsigned Add_byRef(const T &item)
+   {
+     ReserveOnePosition();
+     const unsigned size = _size;
+@@ -231,6 +260,14 @@
+   }
+   */
+ 
++  T& AddNew_NoConstruct()
++  {
++    ReserveOnePosition();
++    const unsigned size = _size;
++    _size = size + 1;
++    return _items[size];
++  }
++
+   unsigned AddInReserved(const T item)
+   {
+     const unsigned size = _size;
+@@ -380,12 +417,12 @@
+     return right;
+   }
+ 
+-  static void SortRefDown(T* p, unsigned k, unsigned size, int (*compare)(const T*, const T*, void *), void *param)
++  static void SortRefDown(T* const p, size_t k, const size_t size, int (*compare)(const T*, const T*, void *), void *param)
+   {
+     const T temp = p[k];
+     for (;;)
+     {
+-      unsigned s = (k << 1);
++      size_t s = (k << 1) + 1;
+       if (s > size)
+         break;
+       if (s < size && compare(p + s + 1, p + s, param) > 0)
+@@ -400,35 +437,35 @@
+ 
+   void Sort(int (*compare)(const T*, const T*, void *), void *param)
+   {
+-    unsigned size = _size;
++    size_t size = _size;
+     if (size <= 1)
+       return;
+-    T* p = _items - 1;
++    T* p = _items;
+     {
+-      unsigned i = size >> 1;
++      size_t i = size-- >> 1;
+       do
+-        SortRefDown(p, i, size, compare, param);
+-      while (--i);
++        SortRefDown(p, --i, size, compare, param);
++      while (i);
+     }
+     do
+     {
+       const T temp = p[size];
+-      p[size--] = p[1];
+-      p[1] = temp;
+-      SortRefDown(p, 1, size, compare, param);
++      p[size] = p[0];
++      p[0] = temp;
++      SortRefDown(p, 0, --size, compare, param);
+     }
+-    while (size > 1);
++    while (size);
+   }
+ 
+-  static void SortRefDown2(T* p, unsigned k, unsigned size)
++  static void SortRefDown2(T* const p, size_t k, const size_t size)
+   {
+     const T temp = p[k];
+     for (;;)
+     {
+-      unsigned s = (k << 1);
++      size_t s = (k << 1) + 1;
+       if (s > size)
+         break;
+-      if (s < size && p[(size_t)s + 1].Compare(p[s]) > 0)
++      if (s < size && p[s + 1].Compare(p[s]) > 0)
+         s++;
+       if (temp.Compare(p[s]) >= 0)
+         break;
+@@ -440,24 +477,24 @@
+ 
+   void Sort2()
+   {
+-    unsigned size = _size;
++    size_t size = _size;
+     if (size <= 1)
+       return;
+-    T* p = _items - 1;
++    T* p = _items;
+     {
+-      unsigned i = size >> 1;
++      size_t i = size-- >> 1;
+       do
+-        SortRefDown2(p, i, size);
+-      while (--i);
++        SortRefDown2(p, --i, size);
++      while (i);
+     }
+     do
+     {
+       const T temp = p[size];
+-      p[size--] = p[1];
+-      p[1] = temp;
+-      SortRefDown2(p, 1, size);
++      p[size] = p[0];
++      p[0] = temp;
++      SortRefDown2(p, 0, --size);
+     }
+-    while (size > 1);
++    while (size);
+   }
+ };
+ 
+@@ -503,10 +540,7 @@
+     const unsigned addSize = v.Size();
+     if (addSize != 0)
+     {
+-      const unsigned size = Size();
+-      if (size >= k_VectorSizeMax || addSize > k_VectorSizeMax - size)
+-        throw 2021;
+-      _v.Reserve(size + addSize);
++      _v.Reserve_for_AddSize(addSize);
+       for (unsigned i = 0; i < addSize; i++)
+         AddInReserved(v[i]);
+     }
+@@ -524,6 +558,20 @@
+   
+   void MoveToFront(unsigned index) { _v.MoveToFront(index); }
+ 
++
++  void MoveOneItem(unsigned destIndex, unsigned srcIndex)
++  {
++    if (destIndex != srcIndex)
++    {
++      delete (T *)_v[destIndex];
++      // _v[destIndex] = NULL;
++      _v[destIndex] = _v[srcIndex];
++      _v[srcIndex] = NULL;
++      /* we leave NULL pointer in array item. It's expected that
++         the caller will delete all NULL items by calling Delete() function. */
++    }
++  }
++
+   unsigned Add(const T& item)
+   {
+     _v.ReserveOnePosition();
+--- a/src/CPP/Common/StdInStream.h
++++ b/src/CPP/Common/StdInStream.h
+@@ -15,7 +15,7 @@
+ public:
+   int CodePage;
+ 
+-  CStdInStream(FILE *stream = NULL):
++  CStdInStream(FILE *stream Z7_lifetimebound = NULL):
+       _stream(stream),
+       // _streamIsOpen(false),
+       CodePage(-1)
+--- a/src/CPP/Common/StdOutStream.h
++++ b/src/CPP/Common/StdOutStream.h
+@@ -17,7 +17,7 @@
+   CBoolPair ListPathSeparatorSlash;
+   int CodePage;
+ 
+-  CStdOutStream(FILE *stream = NULL):
++  CStdOutStream(FILE *stream Z7_lifetimebound = NULL):
+       _stream(stream),
+       // _streamIsOpen(false),
+       IsTerminalMode(false),
+@@ -43,30 +43,30 @@
+   */
+   bool Flush() throw();
+   
+-  CStdOutStream & operator<<(CStdOutStream & (* func)(CStdOutStream  &))
++  CStdOutStream & operator<<(CStdOutStream & (* func)(CStdOutStream  &)) Z7_lifetimebound
+   {
+     (*func)(*this);
+     return *this;
+   }
+ 
+-  CStdOutStream & operator<<(const char *s) throw()
++  CStdOutStream & operator<<(const char *s) throw() Z7_lifetimebound
+   {
+     fputs(s, _stream);
+     return *this;
+   }
+ 
+-  CStdOutStream & operator<<(char c) throw()
++  CStdOutStream & operator<<(char c) throw() Z7_lifetimebound
+   {
+     fputc((unsigned char)c, _stream);
+     return *this;
+   }
+ 
+-  CStdOutStream & operator<<(Int32 number) throw();
+-  CStdOutStream & operator<<(Int64 number) throw();
+-  CStdOutStream & operator<<(UInt32 number) throw();
+-  CStdOutStream & operator<<(UInt64 number) throw();
++  CStdOutStream & operator<<(Int32 number) throw() Z7_lifetimebound;
++  CStdOutStream & operator<<(Int64 number) throw() Z7_lifetimebound;
++  CStdOutStream & operator<<(UInt32 number) throw() Z7_lifetimebound;
++  CStdOutStream & operator<<(UInt64 number) throw() Z7_lifetimebound;
+ 
+-  CStdOutStream & operator<<(const wchar_t *s);
++  CStdOutStream & operator<<(const wchar_t *s) Z7_lifetimebound;
+   void PrintUString(const UString &s, AString &temp);
+   void Convert_UString_to_AString(const UString &src, AString &dest);
+ 
+@@ -79,7 +79,7 @@
+   void NormalizePrint_wstr_Path(const wchar_t *s);
+ };
+ 
+-CStdOutStream & endl(CStdOutStream & outStream) throw();
++CStdOutStream & endl(CStdOutStream & outStream Z7_lifetimebound) throw();
+ 
+ extern CStdOutStream g_StdOut;
+ extern CStdOutStream g_StdErr;
+--- a/src/CPP/Common/StringConvert.h
++++ b/src/CPP/Common/StringConvert.h
+@@ -17,8 +17,8 @@
+ AString UnicodeStringToMultiByte(const UString &src, UINT codePage, char defaultChar, bool &defaultCharWasUsed);
+ AString UnicodeStringToMultiByte(const UString &src, UINT codePage = CP_ACP);
+ 
+-inline const wchar_t* GetUnicodeString(const wchar_t *u)  { return u; }
+-inline const UString& GetUnicodeString(const UString &u)  { return u; }
++inline const wchar_t* GetUnicodeString(const wchar_t *u Z7_lifetimebound)  { return u; }
++inline const UString& GetUnicodeString(const UString &u Z7_lifetimebound)  { return u; }
+ 
+ inline UString GetUnicodeString(const AString &a)  { return MultiByteToUnicodeString(a); }
+ inline UString GetUnicodeString(const char *a)     { return MultiByteToUnicodeString(a); }
+@@ -28,11 +28,11 @@
+ inline UString GetUnicodeString(const char *a, UINT codePage)
+   { return MultiByteToUnicodeString(a, codePage); }
+ 
+-inline const wchar_t* GetUnicodeString(const wchar_t *u, UINT) { return u; }
+-inline const UString& GetUnicodeString(const UString &u, UINT) { return u; }
++inline const wchar_t* GetUnicodeString(const wchar_t *u Z7_lifetimebound, UINT) { return u; }
++inline const UString& GetUnicodeString(const UString &u Z7_lifetimebound, UINT) { return u; }
+ 
+-inline const char*    GetAnsiString(const char    *a) { return a; }
+-inline const AString& GetAnsiString(const AString &a) { return a; }
++inline const char*    GetAnsiString(const char    *a Z7_lifetimebound) { return a; }
++inline const AString& GetAnsiString(const AString &a Z7_lifetimebound) { return a; }
+ 
+ inline AString GetAnsiString(const wchar_t *u) { return UnicodeStringToMultiByte(UString(u)); }
+ inline AString GetAnsiString(const UString &u) { return UnicodeStringToMultiByte(u); }
+@@ -49,20 +49,20 @@
+   { return UnicodeStringToMultiByte(u, CP_OEMCP); }
+ 
+ #ifdef _UNICODE
+-  inline const wchar_t* GetSystemString(const wchar_t *u) { return u;}
+-  inline const UString& GetSystemString(const UString &u) { return u;}
+-  inline const wchar_t* GetSystemString(const wchar_t *u, UINT /* codePage */) { return u;}
+-  inline const UString& GetSystemString(const UString &u, UINT /* codePage */) { return u;}
++  inline const wchar_t* GetSystemString(const wchar_t *u Z7_lifetimebound) { return u;}
++  inline const UString& GetSystemString(const UString &u Z7_lifetimebound) { return u;}
++  inline const wchar_t* GetSystemString(const wchar_t *u Z7_lifetimebound, UINT /* codePage */) { return u;}
++  inline const UString& GetSystemString(const UString &u Z7_lifetimebound, UINT /* codePage */) { return u;}
+   
+   inline UString GetSystemString(const AString &a, UINT codePage) { return MultiByteToUnicodeString(a, codePage); }
+   inline UString GetSystemString(const char    *a, UINT codePage) { return MultiByteToUnicodeString(a, codePage); }
+   inline UString GetSystemString(const AString &a) { return MultiByteToUnicodeString(a); }
+   inline UString GetSystemString(const char    *a) { return MultiByteToUnicodeString(a); }
+ #else
+-  inline const char*    GetSystemString(const char    *a) { return a; }
+-  inline const AString& GetSystemString(const AString &a) { return a; }
+-  inline const char*    GetSystemString(const char    *a, UINT) { return a; }
+-  inline const AString& GetSystemString(const AString &a, UINT) { return a; }
++  inline const char*    GetSystemString(const char    *a Z7_lifetimebound) { return a; }
++  inline const AString& GetSystemString(const AString &a Z7_lifetimebound) { return a; }
++  inline const char*    GetSystemString(const char    *a Z7_lifetimebound, UINT) { return a; }
++  inline const AString& GetSystemString(const AString &a Z7_lifetimebound, UINT) { return a; }
+   
+   inline AString GetSystemString(const wchar_t *u) { return UnicodeStringToMultiByte(UString(u)); }
+   inline AString GetSystemString(const UString &u) { return UnicodeStringToMultiByte(u); }
+--- a/src/CPP/Common/StringToInt.h
++++ b/src/CPP/Common/StringToInt.h
+@@ -29,10 +29,10 @@
+   } \
+ }
+ 
+-const char *FindNonHexChar(const char *s) throw();
++const char *FindNonHexChar(const char *s Z7_lifetimebound) throw();
+ 
+ // in: (dest != NULL)
+ // returns: pointer in dest array after last written byte
+-Byte *ParseHexString(const char *s, Byte *dest) throw();
++Byte *ParseHexString(const char *s, Byte *dest Z7_lifetimebound) throw();
+ 
+ #endif
+--- a/src/CPP/Common/UTFConvert.cpp
++++ b/src/CPP/Common/UTFConvert.cpp
+@@ -539,7 +539,7 @@
+ }
+ 
+ 
+-static char *Utf16_To_Utf8(char *dest, const wchar_t *src, const wchar_t *srcLim, unsigned flags)
++static char *Utf16_To_Utf8(char *dest Z7_lifetimebound, const wchar_t *src, const wchar_t *srcLim, unsigned flags)
+ {
+   for (;;)
+   {
+--- a/src/CPP/Common/Wildcard.h
++++ b/src/CPP/Common/Wildcard.h
+@@ -85,7 +85,7 @@
+       // , ExcludeDirItems(false)
+       {}
+ 
+-  CCensorNode(const UString &name, CCensorNode *parent):
++  CCensorNode(const UString &name, CCensorNode *parent Z7_lifetimebound):
+       Parent(parent)
+       // , ExcludeDirItems(false)
+       , Name(name)
+--- a/src/CPP/Windows/Defs.h
++++ b/src/CPP/Windows/Defs.h
+@@ -1,17 +1,2 @@
+-// Windows/Defs.h
+-
+-#ifndef ZIP7_INC_WINDOWS_DEFS_H
+-#define ZIP7_INC_WINDOWS_DEFS_H
+-
+-#include "../Common/MyWindows.h"
+-
+-#ifdef _WIN32
+-inline BOOL BoolToBOOL(bool v) { return (v ? TRUE: FALSE); }
+-#endif
+-
+-inline bool BOOLToBool(BOOL v) { return (v != FALSE); }
+-
+-inline VARIANT_BOOL BoolToVARIANT_BOOL(bool v) { return (v ? VARIANT_TRUE: VARIANT_FALSE); }
+-inline bool VARIANT_BOOLToBool(VARIANT_BOOL v) { return (v != VARIANT_FALSE); }
+-
+-#endif
++// Compatibility alias for PLzmaSDK sources using the pre-26.03 name.
++#include "WinDefs.h"
+--- a/src/CPP/Windows/FileDir.cpp
++++ b/src/CPP/Windows/FileDir.cpp
+@@ -37,7 +37,9 @@
+ 
+ #ifndef _WIN32
+ 
+-static bool FiTime_To_timespec(const CFiTime *ft, timespec &ts)
++extern
++bool FiTime_To_timespec(const CFiTime *ft, timespec &ts);
++bool FiTime_To_timespec(const CFiTime *ft, timespec &ts)
+ {
+   if (ft)
+   {
+@@ -54,7 +56,7 @@
+     ts.tv_sec = 0;
+     ts.tv_nsec =
+     #ifdef UTIME_OMIT
+-      UTIME_OMIT; // -2 keep old timesptamp
++      UTIME_OMIT; // -2 keep old timestamp
+     #else
+       // UTIME_NOW; -1 // set to the current time
+       0;
+@@ -173,6 +175,10 @@
+ 
+ bool SetFileAttrib(CFSTR path, DWORD attrib)
+ {
++  /* win10:
++    if (attrib == 0), it sets (FILE_ATTRIBUTE_NORMAL) attribute
++    (FILE_ATTRIBUTE_DIRECTORY and some another attributes are ignored for files).
++  */
+   #ifndef _UNICODE
+   if (!g_IsNT)
+   {
+@@ -1081,7 +1087,7 @@
+   }
+   // There is file IO error or process was interrupted by user.
+   // We close output file and delete it.
+-  // DeleteFileAlways doesn't change errno (if successed), but we restore errno.
++  // DeleteFileAlways doesn't change errno (if succeed), but we restore errno.
+   const int errno_save = errno;
+   DeleteFileAlways(newFile);
+   errno = errno_save;
+@@ -1242,28 +1248,34 @@
+   return SetFileTime_Base(path, cTime, aTime, mTime, AT_SYMLINK_NOFOLLOW);
+ }
+ 
+-#if !defined(LIBPLZMA)
+-struct C_umask
++C_umask::C_umask()
+ {
+-  mode_t mask;
+-
+-  C_umask()
+-  {
+-    /* by security reasons we restrict attributes according
+-       with process's file mode creation mask (umask) */
+-    const mode_t um = umask(0); // octal :0022 is expected
+-    mask = 0777 & (~um);        // octal: 0755 is expected
+-    umask(um);  // restore the umask
+-    // printf("\n umask = 0%03o mask = 0%03o\n", um, mask);
+-    
+-    // mask = 0777; // debug we can disable the restriction:
+-  }
+-};
++/*
++  For security purposes, we restrict the file (mode) attributes
++  using the process's file mode creation mask (umask).
++  System's umask is used by open(), mkdir(), and other system calls
++  that create files to modify the permissions placed on newly
++  created files or directories.
++  We use (g_umask.mask) for any function that changes the file's access
++  mode but is not affected by the system's umask.
++  We use additional mask restiction 0777 for security purposes.
++  So we don't create the following mode bits for files and directories:
++    S_ISUID  04000 set-user-ID bit
++    S_ISGID  02000 set-group-ID bit
++    S_ISVTX  01000 sticky bit
++  system's open(), mkdir() also can have similar 0777 restiction for some cases.
++*/
++  const mode_t um = umask(0); // um = 0022 (octal) is expected
++  mask = ~um
++      & 0777; // 0777 is our additional mode restruction : is secure
++      // & 07777; // for debug : 07777 to support all mode bits : is not secure
++  // mask = 07777; // for debug : to restore all mode bits
++  umask(um); // restore original umask that was changed by umask(0) in code above
++}
+ 
+-static C_umask g_umask;
+-#endif // !LIBPLZMA
++C_umask g_umask;
+ 
+-// #define PRF(x) x;
++// #define PRF(x) x
+ #define PRF(x)
+ 
+ #define TRACE_SetFileAttrib(msg) \
+@@ -1277,13 +1289,18 @@
+   return chown(path, owner, group);
+ }
+ 
++int my_chown_Link(CFSTR path, uid_t owner, gid_t group)
++{
++  return lchown(path, owner, group);
++  // return fchownat(AT_FDCWD, path, owner, group, AT_SYMLINK_NOFOLLOW);
++}
++
+ #if !defined(LIBPLZMA)
+ bool SetFileAttrib_PosixHighDetect(CFSTR path, DWORD attrib)
+ {
+   TRACE_SetFileAttrib("")
+-
++  mode_t mode;
+   struct stat st;
+-
+   bool use_lstat = true;
+   if (use_lstat)
+   {
+@@ -1302,20 +1319,26 @@
+       return false;
+     }
+   }
+-  
++  mode = st.st_mode;
++
+   if (attrib & FILE_ATTRIBUTE_UNIX_EXTENSION)
+   {
+     TRACE_SetFileAttrib("attrib & FILE_ATTRIBUTE_UNIX_EXTENSION")
+-    st.st_mode = attrib >> 16;
+-    if (S_ISDIR(st.st_mode))
++    mode = attrib >> 16;
++    if (S_ISDIR(mode))
+     {
++      if (!S_ISDIR(st.st_mode))
++        return true;
+       // user/7z must be able to create files in this directory
+-      st.st_mode |= (S_IRUSR | S_IWUSR | S_IXUSR);
++      mode |= (S_IRUSR | S_IWUSR | S_IXUSR);
++    }
++    else
++    {
++      if (!S_ISREG(mode) || !S_ISREG(st.st_mode))
++        return true;
+     }
+-    else if (!S_ISREG(st.st_mode))
+-      return true;
+   }
+-  else if (S_ISLNK(st.st_mode))
++  else if (S_ISLNK(mode))
+   {
+     /* for most systems: permissions for symlinks are fixed to rwxrwxrwx.
+        so we don't need chmod() for symlinks. */
+@@ -1327,27 +1350,28 @@
+   {
+     TRACE_SetFileAttrib("Only Windows Attributes")
+     // Only Windows Attributes
+-    if (S_ISDIR(st.st_mode)
++    if (S_ISDIR(mode)
+         || (attrib & FILE_ATTRIBUTE_READONLY) == 0)
+       return true;
+-    st.st_mode &= ~(mode_t)(S_IWUSR | S_IWGRP | S_IWOTH); // octal: ~0222; // disable write permissions
++    mode &= ~(mode_t)(S_IWUSR | S_IWGRP | S_IWOTH); // octal: ~0222; // disable write permissions
+   }
+ 
+   int res;
++  mode &= g_umask.mask;
+   /*
+-  if (S_ISLNK(st.st_mode))
++  if (S_ISLNK(mode))
+   {
+     printf("\nfchmodat()\n");
+-    TRACE_chmod(path, (st.st_mode) & g_umask.mask)
+-    // AT_SYMLINK_NOFOLLOW is not implemted still in Linux.
+-    res = fchmodat(AT_FDCWD, path, (st.st_mode) & g_umask.mask,
+-        S_ISLNK(st.st_mode) ? AT_SYMLINK_NOFOLLOW : 0);
++    TRACE_chmod(path, (mode))
++    // AT_SYMLINK_NOFOLLOW is not implemented still in Linux.
++    res = fchmodat(AT_FDCWD, path, (mode),
++        S_ISLNK(mode) ? AT_SYMLINK_NOFOLLOW : 0);
+   }
+   else
+   */
+   {
+-    TRACE_chmod(path, (st.st_mode) & g_umask.mask)
+-    res = chmod(path, (st.st_mode) & g_umask.mask);
++    TRACE_chmod(path, mode)
++    res = chmod(path, mode);
+   }
+   // TRACE_SetFileAttrib("End")
+   return (res == 0);
+--- a/src/CPP/Windows/FileDir.h
++++ b/src/CPP/Windows/FileDir.h
+@@ -46,6 +46,7 @@
+ #else
+ 
+ int my_chown(CFSTR path, uid_t owner, gid_t group);
++int my_chown_Link(CFSTR path, uid_t owner, gid_t group);
+ 
+ #endif
+ 
+@@ -120,7 +121,7 @@
+ public:
+   CTempFile(): _mustBeDeleted(false) {}
+   ~CTempFile() { Remove(); }
+-  const FString &GetPath() const { return _path; }
++  const FString &GetPath() const Z7_lifetimebound { return _path; }
+   bool Create(CFSTR pathPrefix, NIO::COutFile *outFile); // pathPrefix is not folder prefix
+   bool CreateRandomInTempFolder(CFSTR namePrefix, NIO::COutFile *outFile);
+   bool Remove();
+@@ -138,7 +139,7 @@
+ public:
+   CTempDir(): _mustBeDeleted(false) {}
+   ~CTempDir() { Remove();  }
+-  const FString &GetPath() const { return _path; }
++  const FString &GetPath() const Z7_lifetimebound { return _path; }
+   void DisableDeleting() { _mustBeDeleted = false; }
+   bool Create(CFSTR namePrefix) ;
+   bool Remove();
+--- a/src/CPP/Windows/FileFind.cpp
++++ b/src/CPP/Windows/FileFind.cpp
+@@ -1079,26 +1079,24 @@
+ }
+ 
+ 
+-static const char *Get_Name_from_Path(CFSTR path) throw()
++/* if last character is path separator,
++   function returns name before last separator */
++static CFSTR Get_Name_from_Path(CFSTR path Z7_lifetimebound) throw()
+ {
+-  size_t len = strlen(path);
+-  if (len == 0)
+-    return path;
+-  const char *p = path + len - 1;
+-  {
+-    if (p == path)
+-      return path;
+-    p--;
+-  }
++  CFSTR name = path;
+   for (;;)
+   {
+-    char c = *p;
++    const FChar c = *path++;
++    if (c == 0)
++      break;
+     if (IS_PATH_SEPAR(c))
+-      return p + 1;
+-    if (p == path)
+-      return path;
+-    p--;
++    {
++      if (*path == 0)
++        break;
++      name = path;
++    }
+   }
++  return name;
+ }
+ 
+ 
+--- a/src/CPP/Windows/FileFind.h
++++ b/src/CPP/Windows/FileFind.h
+@@ -13,8 +13,6 @@
+ #include "../Common/MyString.h"
+ #include "../Common/MyWindows.h"
+ 
+-#include "Defs.h"
+-
+ #include "FileIO.h"
+ 
+ namespace NWindows {
+--- a/src/CPP/Windows/FileIO.cpp
++++ b/src/CPP/Windows/FileIO.cpp
+@@ -6,6 +6,29 @@
+ #include "../../C/Alloc.h"
+ #endif
+ 
++#ifdef _WIN32
++#ifdef __MINGW32_VERSION
++// #if !defined(_MSC_VER) && (__GNUC__) && (__GNUC__ < 10)
++// for old mingw
++#include <ddk/ntddk.h>
++#else
++#ifndef Z7_OLD_WIN_SDK
++  #if !defined(_M_IA64)
++    #include <winternl.h>
++  #endif
++#else
++typedef LONG NTSTATUS;
++typedef struct _IO_STATUS_BLOCK {
++    union {
++        NTSTATUS Status;
++        PVOID Pointer;
++    };
++    ULONG_PTR Information;
++} IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
++#endif
++#endif
++#endif // _WIN32
++
+ // #include <stdio.h>
+ 
+ /*
+@@ -33,6 +56,48 @@
+ extern bool g_IsNT;
+ #endif
+ 
++#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500) && !defined(_M_IA64)
++#define Z7_WIN_NTSTATUS  NTSTATUS
++#define Z7_WIN_IO_STATUS_BLOCK  IO_STATUS_BLOCK
++#else
++typedef LONG Z7_WIN_NTSTATUS;
++typedef struct
++{
++  union
++  {
++    Z7_WIN_NTSTATUS Status;
++    PVOID Pointer;
++  } DUMMYUNIONNAME;
++  ULONG_PTR Information;
++} Z7_WIN_IO_STATUS_BLOCK;
++#endif
++
++typedef Z7_WIN_NTSTATUS (WINAPI *Func_NtSetInformationFile)(
++    HANDLE FileHandle,
++    Z7_WIN_IO_STATUS_BLOCK *IoStatusBlock,
++    PVOID FileInformation,
++    ULONG Length,
++    Z7_WIN_FILE_INFORMATION_CLASS FileInformationClass);
++// NTAPI
++typedef ULONG (WINAPI *Func_RtlNtStatusToDosError)(Z7_WIN_NTSTATUS Status);
++
++Z7_DIAGNOSTIC_IGNORE_CAST_FUNCTION
++static Func_NtSetInformationFile g_NtSetInformationFile;
++static Func_RtlNtStatusToDosError g_RtlNtStatusToDosError;
++static struct C_Init_NtSetInformationFile
++{
++  C_Init_NtSetInformationFile()
++  {
++    const HMODULE ntdll = ::GetModuleHandleW(L"ntdll.dll");
++         g_NtSetInformationFile = Z7_GET_PROC_ADDRESS(
++      Func_NtSetInformationFile, ntdll,
++          "NtSetInformationFile");
++         g_RtlNtStatusToDosError = Z7_GET_PROC_ADDRESS(
++      Func_RtlNtStatusToDosError, ntdll,
++          "RtlNtStatusToDosError");
++  }
++} g_C_Init_NtSetInformationFile;
++
+ using namespace NWindows;
+ using namespace NFile;
+ using namespace NName;
+@@ -353,7 +418,7 @@
+     WinXP 64-bit:
+ 
+     HDD \\.\PhysicalDrive0 (MBR):
+-      GetPartitionInfo == GeometryEx :  corrrect size? (includes tail)
++      GetPartitionInfo == GeometryEx :  correct size? (includes tail)
+       Geometry   :  smaller than GeometryEx (no tail, maybe correct too?)
+       MyGetDiskFreeSpace : FAIL
+       Size correction is slow and block size (kClusterSize) must be small?
+@@ -365,8 +430,8 @@
+ 
+     CD-ROM drive (ISO):
+       MyGetDiskFreeSpace   :  correct size. Same size can be calculated after correction
+-      Geometry == CdRomGeometry  :  smaller than corrrect size
+-      GetPartitionInfo == GeometryEx :  larger than corrrect size
++      Geometry == CdRomGeometry  :  smaller than correct size
++      GetPartitionInfo == GeometryEx :  larger than correct size
+ 
+     Floppy \\.\a: (FAT):
+       Geometry :  correct size.
+@@ -539,6 +604,70 @@
+ bool COutFile::Create_ALWAYS_with_Attribs(CFSTR fileName, DWORD flagsAndAttributes)
+   { return Open(fileName, FILE_SHARE_READ, CREATE_ALWAYS, flagsAndAttributes); }
+ 
++DWORD CFileBase::Call_NtSetInformationFile_return_WinError(
++    void *data, ULONG len, Z7_WIN_FILE_INFORMATION_CLASS fileInformationClass) const
++{
++  if (!g_NtSetInformationFile)
++    return ERROR_PROC_NOT_FOUND;
++  Z7_WIN_IO_STATUS_BLOCK ioStatus;
++  Z7_memset_0_VAR(ioStatus); // optional
++  const Z7_WIN_NTSTATUS status = g_NtSetInformationFile(_handle,
++      &ioStatus, data, len, fileInformationClass);
++  if (status == 0) // MY_STATUS_SUCCESS
++    return 0;
++  if (g_RtlNtStatusToDosError)
++  {
++    const ULONG res = g_RtlNtStatusToDosError(status);
++    if (res != ERROR_MR_MID_NOT_FOUND)
++      return res;
++  }
++  return 1;
++}
++
++
++#define SET_TIME_FIELD_IF_DEFINED(dest, src) \
++{ if (src) { \
++    dest.LowPart = (src)->dwLowDateTime; \
++    dest.HighPart = (LONG)(src)->dwHighDateTime; \
++  } \
++}
++
++bool COutFile::Set_Time_and_WinAttrib(const FILETIME *cTime, const FILETIME *aTime, const FILETIME *mTime, DWORD attrib) throw()
++{
++#ifdef _WIN32
++  // similar to GetAttrib_PosixHighDetect(attrib)
++  if (attrib & 0xF0000000)
++    attrib &= 0x3FFF;
++#endif
++
++  Z7_WIN_FILE_BASIC_INFORMATION fbi;
++  Z7_memset_0_VAR(fbi);
++  SET_TIME_FIELD_IF_DEFINED (fbi.CreationTime, cTime)
++  SET_TIME_FIELD_IF_DEFINED (fbi.LastAccessTime, aTime)
++  SET_TIME_FIELD_IF_DEFINED (fbi.LastWriteTime, mTime)
++  // fbi.ChangeTime.QuadPart = 0;
++  /*
++    if (attrib == 0)
++      { win10: NtSetInformationFile() doesn't change file attribute
++    if (attrib & FILE_ATTRIBUTE_DIRECTORY)
++      { win10: NtSetInformationFile() returns (STATUS_INVALID_PARAMETER) }
++    we provide similar attribute processing as
++      SetFileAttributes():
++      - we ignore (FILE_ATTRIBUTE_DIRECTORY)
++      - we write (FILE_ATTRIBUTE_NORMAL) instead of (0)
++  */
++  attrib &= ~(DWORD)FILE_ATTRIBUTE_DIRECTORY;
++  if (attrib == 0)
++    attrib = FILE_ATTRIBUTE_NORMAL;
++  fbi.FileAttributes = attrib;
++  const DWORD wres = Call_NtSetInformationFile_return_WinError(
++      &fbi, sizeof(fbi), Z7_WIN_FileBasicInformation);
++  if (wres == 0)
++    return true;
++  SetLastError(wres);
++  return false;
++}
++
+ bool COutFile::SetTime(const FILETIME *cTime, const FILETIME *aTime, const FILETIME *mTime) throw()
+   { return BOOLToBool(::SetFileTime(_handle, cTime, aTime, mTime)); }
+ 
+@@ -628,10 +757,16 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ 
++extern
++bool FiTime_To_timespec(const CFiTime *ft, timespec &ts);
++
+ namespace NWindows {
+ namespace NFile {
+ 
+ namespace NDir {
++
++extern C_umask g_umask;
++
+ bool SetDirTime(CFSTR path, const CFiTime *cTime, const CFiTime *aTime, const CFiTime *mTime);
+ }
+ 
+@@ -644,6 +779,34 @@
+   #endif
+ 
+   Close();
++  /*
++    The mode argument specifies the file mode bits to be
++    applied when a new file is created. If neither O_CREAT nor
++    O_TMPFILE is specified in flags, then mode is ignored (and
++    can thus be specified as 0, or simply omitted).
++
++    The effective mode is modified by the process's umask in
++    the usual way: in the absence of a default ACL, the mode of
++    the created file is (mode & ~umask).
++
++    Note that mode applies only to future accesses of the newly
++    created file; the open() call that creates a read-only file
++    may well return a read/write file descriptor.
++
++    POSIX: if other bits (~0777) are set in mode : the effect is unspecified
++    Linux:
++        S_ISUID  04000 set-user-ID bit
++        S_ISGID  02000 set-group-ID bit
++        S_ISVTX  01000 sticky bit
++
++        S_ISVTX can be set, but it's useless for file in modern linux.
++        by security reasons:
++          open() ignores S_ISUID
++          open() ignores S_ISGID, if S_IXGRP is set.
++  */
++  // mode |= S_ISUID | S_ISGID | S_ISVTX; // for debug
++  // printf("\n open() mode=%o\n", (unsigned)(mode));
++
+   _handle = ::open(name, flags, mode);
+   return _handle != -1;
+ 
+@@ -740,7 +903,7 @@
+ 
+ bool CInFile::Open(const char *name)
+ {
+-  return CFileBase::OpenBinary(name, O_RDONLY);
++  return CFileBase::OpenBinary(name, O_RDONLY, k_OutFile_mode_default);
+ }
+ 
+ bool CInFile::OpenShared(const char *name, bool)
+@@ -903,11 +1066,64 @@
+   return (iret == 0);
+ }
+ 
++// #define PRF(x) x
++#define PRF(x)
++
+ bool COutFile::Close()
+ {
+-  const bool res = CFileBase::Close();
+-  if (!res)
+-    return res;
++  bool res = true;
++  if (_handle == -1)
++    return true;
++  {
++    // bool res2 = true;
++    if (mode_for_Close_defined)
++    {
++      PRF(printf("\n COutFile::Close() mode=%o\n", (unsigned)(mode_for_Close));)
++      // fchmod() function ignores the file creation mask set by umask()
++      // so we can restore any of (07777) mode bits
++      // mode_for_Close |= (0xffff << 12); // for debug
++      if (fchmod(_handle, mode_for_Close) == 0)
++      {
++        mode_for_Close_defined = false;
++        PRF(printf("\n COutFile::Close() fchmod() == 0\n");)
++      }
++      // else res2 = false;
++    }
++    {
++      if (MTime_defined || ATime_defined)
++      {
++        struct timespec times[2];
++        FiTime_To_timespec(ATime_defined ? &ATime : NULL, times[0]);
++        FiTime_To_timespec(MTime_defined ? &MTime : NULL, times[1]);
++        // futimens : POSIX.1-2008
++        if (futimens(_handle, times) == 0)
++        {
++          PRF(printf("\n futimens() OK \n");)
++          ATime_defined = false;
++          MTime_defined = false;
++        }
++        else
++        {
++          PRF(printf("\n futimens() ERROR: %d=%s\n", errno, strerror(errno));)
++        }
++      }
++    }
++    res = CFileBase::Close();
++    if (!res)
++      return res;
++    // res = res2;
++  }
++  if (mode_for_Close_defined)
++  {
++    // chmod() ignores the file creation mask set by umask()
++    // so we can restore any of (07777) mode bits
++    // const int res_chmod =
++    chmod(Path, mode_for_Close);
++    mode_for_Close_defined = false;
++    // if (res_chmod != 0 && res == true) res = false;
++    // PRF(printf("\n COutFile::Close() chmod res=%d\n", (int)res_chmod);)
++  }
++
+   if (CTime_defined || ATime_defined || MTime_defined)
+   {
+     /* bool res2 = */ NWindows::NFile::NDir::SetDirTime(Path,
+@@ -942,6 +1158,24 @@
+   */
+ }
+ 
++bool COutFile::Set_Time_and_WinAttrib(
++    const CFiTime *cTime, const CFiTime *aTime, const CFiTime *mTime, DWORD attrib) throw()
++{
++  PRF(printf("\n Set_Time_and_WinAttrib() mode=%o\n", (unsigned)(attrib >> 16));)
++  SetTime(cTime, aTime, mTime);
++  // we will use fchmod() or chmod() later in Close() fucntion.
++  // fchmod() or chmod() are not limited by system umask.
++  // but for security reasons we use the system mask (g_umask.mask) derived from umask().
++  mode_t mode = k_OutFile_mode_default; // 0666
++  if (attrib & FILE_ATTRIBUTE_UNIX_EXTENSION)
++    mode = (attrib >> 16);
++  else if (attrib & FILE_ATTRIBUTE_READONLY)
++    mode &= ~(mode_t)(S_IWUSR | S_IWGRP | S_IWOTH); // octal: ~0222; // disable write permissions
++  mode_for_Close = mode & NDir::g_umask.mask;
++  mode_for_Close_defined = true;
++  return true;
++}
++
+ bool COutFile::SetMTime(const CFiTime *mTime) throw()
+ {
+   if (mTime) { MTime = *mTime; MTime_defined = true; } else MTime_defined = false;
+--- a/src/CPP/Windows/FileIO.h
++++ b/src/CPP/Windows/FileIO.h
+@@ -19,6 +19,27 @@
+ #include <winioctl.h>
+ #endif
+ 
++typedef enum
++{
++  Z7_WIN_FileDirectoryInformation = 1,
++  Z7_WIN_FileFullDirectoryInformation,
++  Z7_WIN_FileBothDirectoryInformation,
++  Z7_WIN_FileBasicInformation,
++  Z7_WIN_FileRenameInformation = 10
++} Z7_WIN_FILE_INFORMATION_CLASS;
++
++// FILE_BASIC_INFORMATION / FILE_BASIC_INFO
++typedef struct
++{
++  LARGE_INTEGER CreationTime;
++  LARGE_INTEGER LastAccessTime;
++  LARGE_INTEGER LastWriteTime;
++  LARGE_INTEGER ChangeTime;
++  ULONG FileAttributes;
++  ULONG Reserved; // it's expected dummy variable for alignment : optional
++}
++Z7_WIN_FILE_BASIC_INFORMATION;
++
+ #else
+ 
+ #include <sys/types.h>
+@@ -31,7 +52,7 @@
+ 
+ #include "../Windows/TimeUtils.h"
+ 
+-#include "Defs.h"
++#include "WinDefs.h"
+ 
+ HRESULT GetLastError_noZero_HRESULT();
+ 
+@@ -205,6 +226,9 @@
+       return false;
+     return file.GetFileInformation(info);
+   }
++
++  DWORD Call_NtSetInformationFile_return_WinError(void *data, ULONG len,
++      Z7_WIN_FILE_INFORMATION_CLASS fileInformationClass) const;
+ };
+ 
+ #ifndef UNDER_CE
+@@ -323,6 +347,8 @@
+   
+   bool Create_ALWAYS_with_Attribs(CFSTR fileName, DWORD flagsAndAttributes);
+ 
++  bool Set_Time_and_WinAttrib(const CFiTime *cTime, const CFiTime *aTime, const CFiTime *mTime, DWORD attrib) throw();
++
+   bool SetTime(const CFiTime *cTime, const CFiTime *aTime, const CFiTime *mTime) throw();
+   bool SetMTime(const CFiTime *mTime) throw();
+   bool WritePart(const void *data, UInt32 size, UInt32 &processedSize) throw();
+@@ -338,6 +364,15 @@
+ 
+ #else // _WIN32
+ 
++namespace NDir {
++struct C_umask
++{
++  mode_t mask;
++  C_umask();
++};
++extern C_umask g_umask;
++}
++
+ namespace NIO {
+ 
+ bool GetReparseData(CFSTR path, CByteBuffer &reparseData);
+@@ -347,6 +382,7 @@
+ bool SetSymLink(CFSTR from, CFSTR to);
+ bool SetSymLink_UString(CFSTR from, const UString &to);
+ 
++const mode_t k_OutFile_mode_default = 0666;
+ 
+ class CFileBase
+ {
+@@ -359,7 +395,7 @@
+   UInt64 Size; // it can be larger than real available size
+   */
+ 
+-  bool OpenBinary(const char *name, int flags, mode_t mode = 0666);
++  bool OpenBinary(const char *name, int flags, mode_t mode /* = k_OutFile_mode_default */);
+ public:
+   bool PreserveATime;
+ #if 0
+@@ -411,9 +447,11 @@
+   bool CTime_defined;
+   bool ATime_defined;
+   bool MTime_defined;
++  bool mode_for_Close_defined;
+   CFiTime CTime;
+   CFiTime ATime;
+   CFiTime MTime;
++  mode_t mode_for_Close;
+ 
+   AString Path;
+   ssize_t write_part(const void *data, size_t size) throw();
+@@ -425,9 +463,11 @@
+       CTime_defined(false),
+       ATime_defined(false),
+       MTime_defined(false),
+-      mode_for_Create(0666)
++      mode_for_Close_defined(false),
++      mode_for_Create(k_OutFile_mode_default) // 0666
+       {}
+ 
++  ~COutFile() { Close(); }
+   bool Close();
+ 
+   bool Open_EXISTING(CFSTR fileName);
+@@ -454,6 +494,7 @@
+     return SetLength(length);
+   }
+   bool SetTime(const CFiTime *cTime, const CFiTime *aTime, const CFiTime *mTime) throw();
++  bool Set_Time_and_WinAttrib(const CFiTime *cTime, const CFiTime *aTime, const CFiTime *mTime, DWORD attrib) throw();
+   bool SetMTime(const CFiTime *mTime) throw();
+ };
+ 
+--- a/src/CPP/Windows/PropVariantConv.cpp
++++ b/src/CPP/Windows/PropVariantConv.cpp
+@@ -4,7 +4,7 @@
+ 
+ #include "../Common/IntToString.h"
+ 
+-#include "Defs.h"
++#include "WinDefs.h"
+ #include "PropVariantConv.h"
+ 
+ #define UINT_TO_STR_2(c, val) { s[0] = (c); s[1] = (char)('0' + (val) / 10); s[2] = (char)('0' + (val) % 10); s += 3; }
+--- a/src/CPP/Windows/Synchronization.h
++++ b/src/CPP/Windows/Synchronization.h
+@@ -7,7 +7,7 @@
+ 
+ #include "../Common/MyTypes.h"
+ 
+-#include "Defs.h"
++#include "WinDefs.h"
+ 
+ #ifdef _WIN32
+ #include "Handle.h"
+@@ -177,7 +177,7 @@
+   CCriticalSection *_object;
+   void Unlock()  { _object->Leave(); }
+ public:
+-  CCriticalSectionLock(CCriticalSection &object): _object(&object) {_object->Enter(); }
++  CCriticalSectionLock(CCriticalSection &object Z7_lifetimebound): _object(&object) {_object->Enter(); }
+   ~CCriticalSectionLock() { Unlock(); }
+ };
+ 
+@@ -275,7 +275,7 @@
+   CBaseHandle_WFMO(): _sync(NULL) {}
+   virtual ~CBaseHandle_WFMO();
+ 
+-  operator CHandle_WFMO() { return this; }
++  operator CHandle_WFMO() Z7_lifetimebound { return this; }
+   virtual bool IsSignaledAndUpdate() = 0;
+ };
+ 
+--- a/src/CPP/Windows/Thread.h
++++ b/src/CPP/Windows/Thread.h
+@@ -5,7 +5,7 @@
+ 
+ #include "../../C/Threads.h"
+ 
+-#include "Defs.h"
++#include "WinDefs.h"
+ 
+ namespace NWindows {
+ 
+--- a/src/CPP/Windows/TimeUtils.cpp
++++ b/src/CPP/Windows/TimeUtils.cpp
+@@ -7,8 +7,8 @@
+ #include <time.h>
+ #endif
+ 
+-#include "Defs.h"
+ #include "TimeUtils.h"
++#include "WinDefs.h"
+ 
+ namespace NWindows {
+ namespace NTime {
+--- /dev/null
++++ b/src/CPP/Windows/WinDefs.h
+@@ -0,0 +1,17 @@
++// Windows/Defs.h
++
++#ifndef ZIP7_INC_WINDOWS_WIN_DEFS_H
++#define ZIP7_INC_WINDOWS_WIN_DEFS_H
++
++#include "../Common/MyWindows.h"
++
++#ifdef _WIN32
++inline BOOL BoolToBOOL(bool v) { return (v ? TRUE: FALSE); }
++#endif
++
++inline bool BOOLToBool(BOOL v) { return (v != FALSE); }
++
++inline VARIANT_BOOL BoolToVARIANT_BOOL(bool v) { return (v ? VARIANT_TRUE: VARIANT_FALSE); }
++inline bool VARIANT_BOOLToBool(VARIANT_BOOL v) { return (v != VARIANT_FALSE); }
++
++#endif
+--- a/src/plzma_in_streams.cpp
++++ b/src/plzma_in_streams.cpp
+@@ -25,7 +25,9 @@
+ //
+ 
+ 
++#include <algorithm>
+ #include <cstddef>
++#include <limits>
+ 
+ #include "plzma_in_streams.hpp"
+ #include "plzma_common.hpp"
+@@ -358,11 +360,46 @@
+     /// InMultiStream
+ 
+     STDMETHODIMP InMultiStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64 * newPosition) throw() {
+-        return _opened ? _stream.Seek(offset, seekOrigin, newPosition) : S_FALSE;
++        if (!_opened) return S_FALSE;
++        UInt64 base;
++        switch (seekOrigin) {
++            case STREAM_SEEK_SET: base = 0; break;
++            case STREAM_SEEK_CUR: base = _position; break;
++            case STREAM_SEEK_END: base = _ends.back(); break;
++            default: return STG_E_INVALIDFUNCTION;
++        }
++        // Stream offsets passed to the individual volumes must fit Int64.
++        const UInt64 maxOffset = (std::numeric_limits<Int64>::max)();
++        if (offset < 0 && base < UInt64(0) - static_cast<UInt64>(offset))
++            return HRESULT_WIN32_ERROR_NEGATIVE_SEEK;
++        if (offset > 0 && base > maxOffset - static_cast<UInt64>(offset))
++            return E_INVALIDARG;
++        _position = base + static_cast<UInt64>(offset);
++        _activeIndex = _ends.size();
++        LIBPLZMA_CAST_VALUE_TO_PTR(newPosition, UInt64, _position)
++        return S_OK;
+     }
+ 
+     STDMETHODIMP InMultiStream::Read(void * data, UInt32 size, UInt32 * processedSize) throw() {
+-        return _opened ? _stream.Read(data, size, processedSize) : S_FALSE;
++        LIBPLZMA_CAST_VALUE_TO_PTR(processedSize, UInt32, 0)
++        if (!_opened) return S_FALSE;
++        if (size == 0 || _position >= _ends.back()) return S_OK;
++        const auto end = std::upper_bound(_ends.begin(), _ends.end(), _position);
++        const auto index = static_cast<plzma_size_t>(end - _ends.begin());
++        auto &volume = _streams.at(index);
++        if (_activeIndex != index) {
++            const UInt64 start = index == 0 ? 0 : _ends[index - 1];
++            RINOK(volume->Seek(static_cast<Int64>(_position - start), STREAM_SEEK_SET, nullptr))
++            _activeIndex = index;
++        }
++        const UInt32 chunk = static_cast<UInt32>((std::min<UInt64>)(size, *end - _position));
++        UInt32 actual = 0;
++        const HRESULT result = volume->Read(data, chunk, &actual);
++        if (actual > chunk) return E_FAIL;
++        _position += actual;
++        if (result != S_OK) _activeIndex = _ends.size();
++        LIBPLZMA_CAST_VALUE_TO_PTR(processedSize, UInt32, actual)
++        return result;
+     }
+ 
+     void InMultiStream::open() {
+@@ -370,27 +407,40 @@
+         if (_opened) {
+             return;
+         }
+-        for (plzma_size_t i = 0, n = _streams.count(); i < n; i++) {
+-            auto stream = _streams.at(i);
+-            stream->open();
+-            UInt64 size = 0;
+-            HRESULT res = stream->Seek(0, STREAM_SEEK_END, &size);
+-            if (res == S_OK) {
+-                res = stream->Seek(0, STREAM_SEEK_SET, nullptr);
+-            }
+-            if (res != S_OK) {
+-                Exception exception(plzma_error_code_invalid_arguments, "Can't open in-stream.", __FILE__, __LINE__);
+-                char reason[64] = { 0 };
+-                ::snprintf(reason, 64, "Can't seek sub-stream at index %llu.", static_cast<unsigned long long>(i));
+-                exception.setReason(reason, nullptr);
+-                throw exception;
+-            }
+-            CMultiStream::CSubStreamInfo info;
+-            info.Size = size;
+-            info.Stream = CMyComPtr<IInStream>(stream.get());
+-            _stream.Streams.Add(info);
+-            _stream.Init();
+-        }
++        std::vector<UInt64> ends;
++        ends.reserve(_streams.count());
++        UInt64 total = 0;
++        plzma_size_t openedCount = 0;
++        try {
++            for (plzma_size_t i = 0, n = _streams.count(); i < n; i++) {
++                auto stream = _streams.at(i);
++                stream->open();
++                ++openedCount;
++                UInt64 size = 0;
++                HRESULT res = stream->Seek(0, STREAM_SEEK_END, &size);
++                if (res == S_OK) {
++                    res = stream->Seek(0, STREAM_SEEK_SET, nullptr);
++                }
++                if (res != S_OK) {
++                    Exception exception(plzma_error_code_invalid_arguments, "Can't open in-stream.", __FILE__, __LINE__);
++                    char reason[64] = { 0 };
++                    ::snprintf(reason, 64, "Can't seek sub-stream at index %llu.", static_cast<unsigned long long>(i));
++                    exception.setReason(reason, nullptr);
++                    throw exception;
++                }
++                if (size > static_cast<UInt64>((std::numeric_limits<Int64>::max)()) - total) {
++                    throw Exception(plzma_error_code_invalid_arguments, "Combined stream exceeds the seek range.", __FILE__, __LINE__);
++                }
++                total += size;
++                ends.push_back(total);
++            }
++        } catch (...) {
++            for (plzma_size_t i = 0; i < openedCount; ++i) _streams.at(i)->close();
++            throw;
++        }
++        _ends.swap(ends);
++        _activeIndex = _ends.size();
++        _position = 0;
+         _opened = true;
+     }
+ 
+@@ -399,7 +449,7 @@
+         for (plzma_size_t i = 0, n = _streams.count(); i < n; i++) {
+             _streams.at(i)->close();
+         }
+-        _stream.Streams.ClearAndFree();
++        _ends.clear();
+         _opened = false;
+     }
+     
+--- a/src/plzma_in_streams.hpp
++++ b/src/plzma_in_streams.hpp
+@@ -29,6 +29,7 @@
+ #define __PLZMA_IN_STREAMS_HPP__ 1
+ 
+ #include <cstddef>
++#include <vector>
+ 
+ #include "../libplzma.hpp"
+ #include "plzma_private.hpp"
+@@ -39,7 +40,7 @@
+ #include "CPP/Common/MyString.h"
+ #include "CPP/Common/MyCom.h"
+ #include "CPP/7zip/IStream.h"
+-#include "CPP/7zip/Archive/Common/MultiStream.h"
++
+ 
+ namespace plzma {
+     
+@@ -168,7 +169,10 @@
+     class InMultiStream final : public InStreamBase {
+     private:
+         Vector<SharedPtr<InStreamBase> > _streams;
+-        CMultiStream _stream;
++        // Exclusive end of each volume in the concatenated stream (SDK 26.06).
++        std::vector<UInt64> _ends;
++        UInt64 _position = 0;
++        size_t _activeIndex = 0;
+         bool _opened = false;
+         
+     protected:

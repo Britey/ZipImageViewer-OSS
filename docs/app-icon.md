@@ -1,0 +1,15 @@
+# App icon
+
+The project generated this folder-and-landscape artwork with OpenAI ImageGen, using its earlier launcher icon as a reference for the general folder concept. The iOS artwork and Android foreground assets were resized with macOS `sips`. The checked-in PNGs retain their image pixels and color information.
+
+The opaque 1024×1024 iOS source is `ZipImageViewer/Assets.xcassets/AppIcon.appiconset/AppIcon.png`. The transparent Android master is `assets/app-icon/AndroidForeground.png`. Android density assets are in `android/app/src/main/res/mipmap-*/ic_launcher_artwork.png`. Its adaptive foreground insets the square artwork by one sixth on each side so the mark stays inside circular, rounded-square and other launcher masks.
+
+Packaging follows the [Android adaptive icon guide](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive), with a shared foreground/monochrome layer in the API26 adaptive definition. Themed rendering is available on supported launchers from API33.
+
+## Generation prompt
+
+> Use case: logo-brand. Asset type: production iOS and Android launcher icon for ZipImageViewer, an archive image reader. Reference image is the old app icon: use its folder-with-image idea as inspiration, not its rough strokes. Create one refined, very simple icon. Solid warm white (#FAFAF7) full-bleed square background. Center a single near-black (#151C20) clean folder outline with a compact landscape-picture glyph (one small sun and two mountain slopes) on its front. The folder is mostly front-facing with a slight forward slant on the front flap, a small rear tab; no protruding sheet, camera, zipper, letters, text, badges or decoration. Smooth precise geometric shapes, consistent medium-bold outline weight, gently rounded joins, balanced negative space. Flat two-color vector-like artwork: absolutely no gradients, shadows, texture, 3D, mockup, border, external rounded app-icon corners, or extra objects. The entire folder mark must fit inside the central 60 percent of both square dimensions, to keep it safe under Android circle masks. Output a single square image, 1024x1024 or larger, opaque, clean sharp edges. Keep the design understated and familiar, a modest refinement rather than a dramatic rebrand.
+
+## Android foreground extraction prompt
+
+> Use case: background-extraction. Asset type: Android adaptive and monochrome launcher foreground. Edit target is the attached finalized folder-and-picture app icon. Remove ONLY the warm-white background, making all white areas fully transparent, including all enclosed white voids inside the folder and the landscape and sun symbols. Preserve the folder and picture mark exactly: its geometry, composition, line weights, original position and scale in the square canvas. Keep just the single near-black graphic with clean antialiased edges on a genuinely transparent background. Do not redraw, restyle, move, enlarge, or add anything. Output a square transparent PNG. No shadows, no checkerboard baked into pixels, no outer border.

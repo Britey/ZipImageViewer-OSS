@@ -1,0 +1,87 @@
+ZipImageViewer Android — third-party notices
+
+The following license and notice files are included in this APK's assets.
+These notices do not replace or modify the respective upstream licenses.
+
+PLzmaSDK 1.6.1
+Copyright (c) 2015–2026 Oleh Kulykov <olehkulykov@gmail.com>
+License: MIT; complete notice in PLzmaSDK-LICENSE.txt.
+Source: https://github.com/OlehKulykov/PLzmaSDK
+The vendored subset incorporates the public-domain LZMA/7-Zip SDK 26.06
+by Igor Pavlov and the repository's documented compatibility/correctness
+patches. The original notices remain in Vendor/PLzmaSDK; see UPSTREAM.md
+and its patches directory for the changes. The original SDK license and
+attribution are in LZMA-SDK-NOTICE.txt. The optional full 7-Zip TAR code is
+omitted from both builds. Unicode, Inc.'s ConvertUTF code retains its complete
+notice in Unicode-ConvertUTF-NOTICE.txt.
+
+Zip4j 2.11.5
+Copyright 2019 and onwards Srikanth Reddy Lingala
+License: Apache License 2.0; full text in Zip4j-LICENSE.txt.
+The upstream NOTICE is copied verbatim as Zip4j-NOTICE.txt.
+Source: https://github.com/srikanth-lingala/zip4j/tree/v2.11.5
+
+AndroidX / Jetpack Compose / Material icons
+The Android Open Source Project and respective contributors.
+License: Apache License 2.0; full text in AndroidX-LICENSE.txt, copied
+from the resolved androidx.core:core:1.17.0 AAR's license resource.
+Sources: https://android.googlesource.com/platform/frameworks/support/
+Versions are specified by android/app/build.gradle.kts and Compose BOM
+2025.10.01. Transitive AndroidX libraries retain their artifact license
+resources where supplied.
+
+Kotlin 2.2.21
+JetBrains s.r.o. and respective authors and developers.
+License: Apache License 2.0; full text in Kotlin-LICENSE.txt.
+Kotlin-NOTICE.txt retains the upstream distribution's original notice.
+Source: https://github.com/JetBrains/kotlin/tree/v2.2.21
+
+kotlinx.coroutines 1.10.2
+JetBrains s.r.o. and respective contributors.
+License: Apache License 2.0; full text in Coroutines-LICENSE.txt.
+Source: https://github.com/Kotlin/kotlinx.coroutines/tree/1.10.2
+No separate NOTICE.txt is supplied at the root of that upstream tag.
+
+LLVM / libc++ shared runtime from Android NDK 27.1.12297006
+The LLVM Project and respective contributors.
+LLVM-NDK27-NOTICE.txt is copied from this NDK's LLVM distribution and retains
+its Apache 2.0 with LLVM exceptions, libc++/libc++abi notices, and other
+included upstream notices. This complete upstream notice also describes
+toolchain components that are not themselves included in the APK.
+LLVM-NOTICE.txt retains the notice from the former NDK 28.2 integration.
+Sources: https://github.com/llvm/llvm-project
+         https://android.googlesource.com/toolchain/llvm-project/
+
+JUnit and AndroidX test fixtures/harnesses are development dependencies;
+they are not included in the production APK.
+
+JPEG XL 0.13.0 / bundled native image codec
+Source: https://github.com/libjxl/libjxl
+Pinned revision: 5a7da83447212fe4900fc29ce97430b881caa67e
+License: BSD 3-Clause; JPEGXL-LICENSE.txt, JPEGXL-PATENTS.txt,
+JPEGXL-AUTHORS.txt retain the upstream notices and patent grant.
+Xorshift128Plus in libjxl includes an adaptation of MIT-licensed code
+from https://github.com/vpxyz/xorshift. The original MIT notice is
+included in JPEGXL-Xorshift128Plus-MIT.txt.
+The Android adapter links these unmodified pinned dependencies statically:
+Brotli 1.2.1 db24a98aed38a16de78cc05ca15cdd8dc2a0d92d (MIT; Brotli-LICENSE.txt)
+Highway 1.2.0 457c891775a7397bdb0376bb1031e6e027af1c48
+  (Apache 2.0 / BSD 3-Clause; Highway-LICENSE.txt, Highway-LICENSE-BSD3.txt)
+skcms 2025-09-16 96d9171c94b937a1b5f0293de7309ac16311b722
+  (BSD 3-Clause; Skcms-LICENSE.txt)
+libpng 1.6.47 872555f4ba910252783af1507f9e7fe1653be252
+  (PNG Reference Library License; Libpng-LICENSE.txt, Libpng-AUTHORS.txt)
+zlib 1.3.1 51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf
+  (zlib license; Zlib-LICENSE.txt)
+Sources and exact dependency revisions are reproduced by
+android/vendor/bootstrap-jpegxl.sh and the pinned upstream gitlinks.
+
+React Native 0.86.3 and React 19.2.3
+Meta Platforms, Inc. and affiliates. MIT licenses are retained in
+ReactNative-LICENSE.txt and React-LICENSE.txt.
+Sources: https://github.com/facebook/react-native/tree/v0.86.3
+         https://github.com/facebook/react/tree/v19.2.3
+
+react-native-safe-area-context 5.7.0
+MIT license in ReactNativeSafeAreaContext-LICENSE.txt.
+Source: https://github.com/AppAndFlow/react-native-safe-area-context

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Test APK only: exposes bundled fixtures, never user files. -->
+        <provider android:name="com.brite.zipimageviewer.access.ArchiveIntentTestProvider"
+            android:authorities="com.brite.zipimageviewer.test.intents"
+            android:exported="true" android:grantUriPermissions="true" />
+        <provider android:name="com.brite.zipimageviewer.data.ImportTestProvider"
+            android:authorities="${applicationId}.import-fixtures" android:exported="true" />
+        <provider android:name="com.brite.zipimageviewer.access.PrivateArchiveIntentTestProvider"
+            android:authorities="com.brite.zipimageviewer.test.private-intents"
+            android:exported="false" android:grantUriPermissions="false" />
+    </application>
+</manifest>

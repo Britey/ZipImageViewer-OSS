@@ -1,0 +1,33 @@
+.DS_Store
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+
+.venv-static/
+__pycache__/
+
+# Android build state and private machine/signing configuration
+.gradle/
+.kotlin/
+.idea/
+**/build/
+**/.cxx/
+**/local.properties
+**/signing.properties
+*.jks
+*.keystore
+*.apk
+*.aab
+
+# React Native generated dependencies and machine state
+# Shared .xcode.env, PrivacyInfo.xcprivacy, Podfile.lock, project files and
+# shared schemes stay versioned; only the local environment override is ignored.
+node_modules/
+Pods/
+.bundle/
+work/
+coverage/
+*.jsbundle
+*.jsbundle.map
+.xcode.env.local

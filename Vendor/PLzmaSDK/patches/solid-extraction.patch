@@ -1,0 +1,25 @@
+--- a/src/plzma_extract_callback.cpp
++++ b/src/plzma_extract_callback.cpp
+@@ -337,7 +337,12 @@
+             itemsCount = numItems;
+         }
+         
+-        const UInt32 maxIndicies = 256;
++        // A solid block must be decoded in one call. Repeating Extract for each
++        // 256 images restarts the same block and scales quadratically for albums.
++        // The app bounds the selected set to 25,000 images (100 KB of indices).
++        const UInt32 maxIndicies = _solidArchive ? MyMax<UInt32>(1, itemsCount) : 256;
++        CRecordVector<UInt32> indexStorage;
++        indexStorage.ClearAndSetSize(maxIndicies);
+ #if !defined(LIBPLZMA_NO_PROGRESS)
+         _progress->reset();
+         UInt32 partsCount = itemsCount / maxIndicies;
+@@ -349,7 +354,7 @@
+ #endif
+         
+         do {
+-            UInt32 indicies[maxIndicies];
++            UInt32 * const indicies = indexStorage.NonConstData();
+             UInt32 fromIndex = 0, toIndex = 0, indicesCount = 0;
+             if (_itemsArray) {
+                 while (indicesCount < maxIndicies && itemIndex < itemsCount) {

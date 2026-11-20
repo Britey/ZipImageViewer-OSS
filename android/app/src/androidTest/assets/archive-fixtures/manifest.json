@@ -1,0 +1,449 @@
+{
+  "generator": "scripts/generate-archive-fixtures.py",
+  "tool": "7-Zip (z) 26.03 (arm64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-09-03",
+  "tool_url": "https://github.com/ip7z/7zip/releases/download/26.03/7z2603-mac.tar.xz",
+  "source_mtime_unix": 1700000000,
+  "expected_images": {
+    "panel.png": {
+      "sha256": "97a3a410c9bca540512251c37ce63982edccbed54c6f2e1d06ec717b9f753e29",
+      "size": 73
+    },
+    "nested/panel.png": {
+      "sha256": "7c3c919026a6f27ace0891b608cc0697fec53dedc25562bfd1443285557cdf8f",
+      "size": 72
+    },
+    "nested/PHOTO.JPG": {
+      "sha256": "bac75dc1b4d783d69d35e7e40e48a3ad294fada2b0773f2d2c9b1002b0f84cda",
+      "size": 850
+    }
+  },
+  "fixtures": [
+    {
+      "file": "plain-lzma-solid.7z",
+      "password": null,
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "-m0=LZMA",
+        "-ms=on",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "plain-lzma-solid.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "b077cbc0bca673dfa71f5ad4f8fb10bafcefbcaf6277154021ad81e4f02added",
+      "archive_size": 894
+    },
+    {
+      "file": "plain-lzma2-nonsolid.7z",
+      "password": null,
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "-m0=LZMA2",
+        "-ms=off",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "plain-lzma2-nonsolid.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "a691a2f4c32f3ef2fd9a2b076d773a52da58e6a10800ba39a10d648a9727771d",
+      "archive_size": 978
+    },
+    {
+      "file": "content-lzma2-solid.7z",
+      "password": "test-password",
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-ptest-password",
+        "-mhe=off",
+        "-y",
+        "-m0=LZMA2",
+        "-ms=on",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "content-lzma2-solid.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "499f0b01344c4b31ab5bfcb30c15b40040146afcc8b599e4a9c99e83affea555",
+      "archive_size": 942
+    },
+    {
+      "file": "headers-lzma-solid.7z",
+      "password": "test-password",
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-ptest-password",
+        "-mhe=on",
+        "-y",
+        "-m0=LZMA",
+        "-ms=on",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "headers-lzma-solid.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "7f5bc736f41688dc9b99757f1d7afe3607d7200e866c81772872a779b17b44cf",
+      "archive_size": 975
+    },
+    {
+      "file": "headers-lzma2-nonsolid.7z",
+      "password": "test-password",
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-ptest-password",
+        "-mhe=on",
+        "-y",
+        "-m0=LZMA2",
+        "-ms=off",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "headers-lzma2-nonsolid.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "46ed942ab4e3d153bd8cbaf107c6c7ca415c8331ab46e1be97fb9bc2dc5fbb59",
+      "archive_size": 1119
+    },
+    {
+      "file": "unicode-password.7z",
+      "password": "密码🔐café",
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-p密码🔐café",
+        "-mhe=on",
+        "-y",
+        "-m0=LZMA2",
+        "-ms=on",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "unicode-password.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "8bd415c88dcefc1658aef469bc72bca67b67b6e0b139dbea0773708100b8fff9",
+      "archive_size": 975
+    },
+    {
+      "file": "whitespace-password.7z",
+      "password": "  padded password  ",
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-p  padded password  ",
+        "-mhe=on",
+        "-y",
+        "-m0=LZMA2",
+        "-ms=on",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "whitespace-password.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "970ee9f4db12b005dbec2c38eb08d3d4a7aa0672a17831eb357c52692a82206d",
+      "archive_size": 975
+    },
+    {
+      "file": "plain-ppmd.7z",
+      "password": null,
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "-m0=PPMd",
+        "-ms=on",
+        "-mx=3",
+        "-mtc=off",
+        "-mta=off",
+        "plain-ppmd.7z",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "c521a4a4f2087ed8817fed8fa065fa5edb366061b05a17ebb10ec7aa157bea06",
+      "archive_size": 911
+    },
+    {
+      "file": "no-images.7z",
+      "password": null,
+      "expected": "noSupportedImages",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "no-images.7z",
+        "notes.txt"
+      ],
+      "archive_sha256": "f02b9e3776768c5e1727785dd396ecd7efac19d3ea9cbd5aecf7f2c34f53e81c",
+      "archive_size": 167
+    },
+    {
+      "file": "cancellation.7z",
+      "password": null,
+      "expected": "cancellationProbe",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "-m0=LZMA2",
+        "-mx=1",
+        "cancellation.7z",
+        "large.png"
+      ],
+      "archive_sha256": "2c81faec07a1cb8e059240848af1c8a846a6652aebea2188dc96ebbc1d616da5",
+      "archive_size": 14553,
+      "uncompressed_size": 67108949,
+      "source_sha256": "fb402b2c7548874c9f2053873b0db65b106a07aa3efb8ec4bd5e806338586ca7"
+    },
+    {
+      "file": "plain.zip",
+      "password": null,
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-tzip",
+        "-y",
+        "-mm=Deflate",
+        "plain.zip",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "27ed084234160a2ff04fa651cff78c33065323423439abe72a1ee7c4f51f8dcf",
+      "archive_size": 1372
+    },
+    {
+      "file": "encrypted.zip",
+      "password": "test-password",
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-tzip",
+        "-ptest-password",
+        "-mem=AES256",
+        "-y",
+        "-mm=Deflate",
+        "encrypted.zip",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "3e1afe51eed719a8a7dd43590d1d052394620f55bf8c713557b582b4b1fb8146",
+      "archive_size": 1572
+    },
+    {
+      "file": "plain.cbz",
+      "password": null,
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-tzip",
+        "-y",
+        "-mm=Deflate",
+        "plain.cbz",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "27ed084234160a2ff04fa651cff78c33065323423439abe72a1ee7c4f51f8dcf",
+      "archive_size": 1372
+    },
+    {
+      "file": "encrypted.cbz",
+      "password": "test-password",
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-tzip",
+        "-ptest-password",
+        "-mem=AES256",
+        "-y",
+        "-mm=Deflate",
+        "encrypted.cbz",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "fc04323d511d78c90561f5473ce3192180626eb24ac06dee9772b453fd95546d",
+      "archive_size": 1572
+    },
+    {
+      "file": "unsafe-traversal.7z",
+      "password": null,
+      "expected": "unsafeOutput",
+      "derived_from": "plain-lzma2-nonsolid.7z",
+      "command": [
+        "7zz",
+        "rn",
+        "unsafe-traversal.7z",
+        "nested/panel.png",
+        "../escape.png"
+      ],
+      "archive_sha256": "5e31b9943801e462a038dd574c9f2f569ca51c9f7caa57b352221dd65c2e8192",
+      "archive_size": 992
+    },
+    {
+      "file": "case-collision.7z",
+      "password": null,
+      "expected": "unsafeOutput",
+      "derived_from": "plain-lzma2-nonsolid.7z",
+      "command": [
+        "7zz",
+        "rn",
+        "case-collision.7z",
+        "nested/panel.png",
+        "PANEL.png"
+      ],
+      "archive_sha256": "048f32978b7a24ad4b11fb2e776b3f3bff0c898bdd9beb0b345de7f07b8b3f37",
+      "archive_size": 988
+    },
+    {
+      "file": "truncated.7z",
+      "password": null,
+      "expected": "failure",
+      "derived_from": "plain-lzma-solid.7z",
+      "mutation": "remove last half",
+      "archive_sha256": "24cad8c2b162905883d240be03f31c8db96266b2928eab96e0d67ba84beb2905",
+      "archive_size": 447
+    },
+    {
+      "file": "damaged-content.7z",
+      "password": "test-password",
+      "expected": "failure",
+      "derived_from": "content-lzma2-solid.7z",
+      "mutation": "XOR byte at offset 40 with 0x40",
+      "archive_sha256": "44ccf3af917263cc4409b346a02c5db50eec84b0cbf021638a6127f5314ff227",
+      "archive_size": 942
+    },
+    {
+      "file": "unicode-filename.7z",
+      "password": null,
+      "expected": "unicodeFilename",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "-m0=LZMA2",
+        "-mx=3",
+        "unicode-filename.7z",
+        "图像🔐.png"
+      ],
+      "archive_sha256": "c183a51caea8fa034f2a672a1d4611f02a1bad00401b11f31f7c183f741c42cc",
+      "archive_size": 199,
+      "expected_images": {
+        "图像🔐.png": {
+          "sha256": "97a3a410c9bca540512251c37ce63982edccbed54c6f2e1d06ec717b9f753e29",
+          "size": 73
+        }
+      }
+    },
+    {
+      "file": "many-images-solid-encrypted.7z",
+      "password": "test-password",
+      "expected": "manyImages",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "-m0=LZMA2",
+        "-ms=on",
+        "-ptest-password",
+        "-mhe=on",
+        "-mx=3",
+        "many-images-solid-encrypted.7z",
+        "pages"
+      ],
+      "archive_sha256": "2f07106a9bb9301fda45ac94097bb5d92e69b7e89315c858909f1c9d500be07d",
+      "archive_size": 816,
+      "image_count": 600,
+      "expected_image": {
+        "sha256": "97a3a410c9bca540512251c37ce63982edccbed54c6f2e1d06ec717b9f753e29",
+        "size": 73
+      },
+      "image_path_pattern": "pages/page-{index:04d}.png (index 0...599)"
+    },
+    {
+      "file": "hidden-images.7z",
+      "password": null,
+      "expected": "success",
+      "command": [
+        "7zz",
+        "a",
+        "-t7z",
+        "-y",
+        "-m0=LZMA2",
+        "-mx=3",
+        "hidden-images.7z",
+        "._panel.png",
+        ".hidden/page.png",
+        "nested/PHOTO.JPG",
+        "nested/panel.png",
+        "notes.txt",
+        "panel.png"
+      ],
+      "archive_sha256": "120dffb583514882a2af0021255c56eac334c17fef659c799effe56f72ceda94",
+      "archive_size": 970
+    }
+  ]
+}

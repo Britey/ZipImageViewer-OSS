@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The adaptive layer extends beyond the launcher mask. Inset the artwork
+     to the visible 72dp area of its 108dp layer, keeping the mark inside it. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="16.6667%">
+    <bitmap android:src="@mipmap/ic_launcher_artwork" android:gravity="fill" />
+</inset>

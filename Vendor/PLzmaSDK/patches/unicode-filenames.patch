@@ -1,0 +1,49 @@
+--- a/src/plzma_open_callback.cpp
++++ b/src/plzma_open_callback.cpp
+@@ -28,6 +28,7 @@
+ #include <cstddef>
+ 
+ #include "plzma_open_callback.hpp"
++#include "CPP/Common/UTFConvert.h"
+ #include "plzma_common.hpp"
+ 
+ namespace plzma {
+@@ -106,7 +107,24 @@
+             if (_archive->GetProperty(index, kpidPath, &path) == S_OK &&
+                 _archive->GetProperty(index, kpidSize, &size) == S_OK &&
+                 (path.vt == VT_EMPTY || path.vt == VT_BSTR)) {
+-                    item = makeShared<Item>(static_cast<Path &&>(Path(path.bstrVal)), index);
++                    // Archive BSTR names contain UTF-16 units even when wchar_t is
++                    // 32-bit. Validate before conversion; do not silently replace an
++                    // invalid name or truncate an embedded NUL.
++                    const unsigned length = path.bstrVal ? ::SysStringLen(path.bstrVal) : 0;
++                    for (unsigned i = 0; i < length; ++i) {
++                        const uint32_t unit = static_cast<uint32_t>(path.bstrVal[i]);
++                        if (unit == 0 || unit > 0xffff || (unit >= 0xdc00 && unit <= 0xdfff)) {
++                            throw Exception(plzma_error_code_invalid_arguments, "Invalid archive filename encoding.", __FILE__, __LINE__);
++                        }
++                        if (unit >= 0xd800 && unit <= 0xdbff) {
++                            if (++i == length || path.bstrVal[i] < 0xdc00 || path.bstrVal[i] > 0xdfff) {
++                                throw Exception(plzma_error_code_invalid_arguments, "Invalid archive filename encoding.", __FILE__, __LINE__);
++                            }
++                        }
++                    }
++                    AString utf8Path;
++                    ConvertUnicodeToUTF8_Flags(UString(path.bstrVal), utf8Path, Z7_UTF_FLAG_TO_UTF8_SURROGATE_ERROR);
++                    item = makeShared<Item>(static_cast<Path &&>(Path(utf8Path.Ptr())), index);
+                     item->setSize(PROPVARIANTGetUInt64(size));
+             }
+             return item;
+--- a/swift/String+Plzma.swift
++++ b/swift/String+Plzma.swift
+@@ -31,7 +31,9 @@
+     
+     init(utf8CString ptr: UnsafePointer<Int8>?) {
+         if let ptr = ptr {
+-            self.init(cString: ptr, encoding: .utf8)!
++            // Error messages and progress must not crash the process on invalid
++            // native UTF-8. Archive item names are validated at the native boundary.
++            self.init(cString: ptr)
+         } else {
+             self.init()
+         }

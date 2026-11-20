@@ -1,0 +1,30 @@
+{
+  "high-depth.png": {
+    "bytes": 960976,
+    "sha256": "3f8eb61e5c54e897815009e2aa2abbcb0674b6ed4e999fc1c61e8788659c98dd"
+  },
+  "p3-swatches.png": {
+    "bytes": 1441525,
+    "sha256": "a042fa27c4c82129da91c638fbac6e087935323e632b31575aa60a8986b24e56"
+  },
+  "pattern-gray-gamma.png": {
+    "bytes": 480838,
+    "sha256": "8ac9a64a9b9b21e326a6a6aa9863da756df259f56313b704ae4d88f31e11e886"
+  },
+  "pattern-gray-icc.png": {
+    "bytes": 481053,
+    "sha256": "11121ddb4d6ad1554a256c82293d102ca3233defee91786243056fe73b8f12f2"
+  },
+  "pattern-gray.png": {
+    "bytes": 480822,
+    "sha256": "62ca38fdae2a4739b3ed1692a8940f81ad74c8b90af0fd3eb9aa3b6036a86202"
+  },
+  "pattern-rgb.jpg": {
+    "bytes": 620424,
+    "sha256": "1406813a8bdb4001e416a6f086e779d7cdac3dd6c13301b0e93673f57d568dc4"
+  },
+  "pattern-rgba-p3.png": {
+    "bytes": 1921719,
+    "sha256": "88250559768ee5d4022347fd344e04b83e7bc9bd4c675b7ac43f6816ac38c604"
+  }
+}

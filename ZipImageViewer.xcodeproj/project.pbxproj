@@ -1,0 +1,853 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0979C0AEA94C378F0477317E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9C710FFD6209C3CC60AB4136 /* PrivacyInfo.xcprivacy */; };
+		459DC89084C7F97884999240 /* libPods-ZipImageViewer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D733E90147692F6BC72C422C /* libPods-ZipImageViewer.a */; };
+		A50756520BA7A24329BBC03C /* libPods-ZipImageViewer-ZipImageViewerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 993D0E6D8AFEB5D93E31BF47 /* libPods-ZipImageViewer-ZipImageViewerTests.a */; };
+		F2958A862CE0ADF0000CB3F9 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = F2958A852CE0ADF0000CB3F9 /* ZipArchive */; };
+		F2958A8D2CE0E484000CB3F9 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F2958A8C2CE0E484000CB3F9 /* ZIPFoundation */; };
+		F2C07A012D000002000CB3F9 /* PLzmaSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F2C07A022D000002000CB3F9 /* PLzmaSDK */; };
+		F2C07A042D000002000CB3F9 /* Archive fixtures in Resources */ = {isa = PBXBuildFile; fileRef = F2C07A052D000002000CB3F9 /* Archive fixtures */; };
+		F2C07A112D000002000CB3F9 /* JPEGXLBridge in Frameworks */ = {isa = PBXBuildFile; productRef = F2C07A122D000002000CB3F9 /* JPEGXLBridge */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F2958A672CE0ACB3000CB3F9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F2958A482CE0ACB2000CB3F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F2958A4F2CE0ACB2000CB3F9;
+			remoteInfo = ZipImageViewer;
+		};
+		F2958A712CE0ACB3000CB3F9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F2958A482CE0ACB2000CB3F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F2958A4F2CE0ACB2000CB3F9;
+			remoteInfo = ZipImageViewer;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		217D6ED7836EAA4C42F1D5A1 /* Pods-ZipImageViewer-ZipImageViewerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZipImageViewer-ZipImageViewerTests.release.xcconfig"; path = "Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests.release.xcconfig"; sourceTree = "<group>"; };
+		993D0E6D8AFEB5D93E31BF47 /* libPods-ZipImageViewer-ZipImageViewerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ZipImageViewer-ZipImageViewerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C710FFD6209C3CC60AB4136 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A1BC18B37373A37D11B4BC37 /* Pods-ZipImageViewer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZipImageViewer.release.xcconfig"; path = "Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer.release.xcconfig"; sourceTree = "<group>"; };
+		C840D7F781BF749DB95DBE28 /* Pods-ZipImageViewer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZipImageViewer.debug.xcconfig"; path = "Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer.debug.xcconfig"; sourceTree = "<group>"; };
+		D733E90147692F6BC72C422C /* libPods-ZipImageViewer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ZipImageViewer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7E842CE7513EFE8E63F1C87 /* Pods-ZipImageViewer-ZipImageViewerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZipImageViewer-ZipImageViewerTests.debug.xcconfig"; path = "Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		F2958A502CE0ACB2000CB3F9 /* ZipImageViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZipImageViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2958A662CE0ACB3000CB3F9 /* ZipImageViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZipImageViewerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2958A702CE0ACB3000CB3F9 /* ZipImageViewerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZipImageViewerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2C07A052D000002000CB3F9 /* Archive fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "Archive fixtures"; path = ZipImageViewerTests/Fixtures/SevenZip; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F2958A782CE0ACB3000CB3F9 /* Exceptions for "ZipImageViewer" folder in "ZipImageViewer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				"Info-Debug.plist",
+			);
+			target = F2958A4F2CE0ACB2000CB3F9 /* ZipImageViewer */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F2958A522CE0ACB2000CB3F9 /* ZipImageViewer */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F2958A782CE0ACB3000CB3F9 /* Exceptions for "ZipImageViewer" folder in "ZipImageViewer" target */,
+			);
+			path = ZipImageViewer;
+			sourceTree = "<group>";
+		};
+		F2958A692CE0ACB3000CB3F9 /* ZipImageViewerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = ZipImageViewerTests;
+			sourceTree = "<group>";
+		};
+		F2958A732CE0ACB3000CB3F9 /* ZipImageViewerUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = ZipImageViewerUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F2958A4D2CE0ACB2000CB3F9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2958A862CE0ADF0000CB3F9 /* ZipArchive in Frameworks */,
+				F2958A8D2CE0E484000CB3F9 /* ZIPFoundation in Frameworks */,
+				F2C07A012D000002000CB3F9 /* PLzmaSDK in Frameworks */,
+				F2C07A112D000002000CB3F9 /* JPEGXLBridge in Frameworks */,
+				459DC89084C7F97884999240 /* libPods-ZipImageViewer.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2958A632CE0ACB3000CB3F9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A50756520BA7A24329BBC03C /* libPods-ZipImageViewer-ZipImageViewerTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2958A6D2CE0ACB3000CB3F9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9BD53A3282E1588BA38AD0E4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D733E90147692F6BC72C422C /* libPods-ZipImageViewer.a */,
+				993D0E6D8AFEB5D93E31BF47 /* libPods-ZipImageViewer-ZipImageViewerTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AA4B7531622333B246EC5876 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C840D7F781BF749DB95DBE28 /* Pods-ZipImageViewer.debug.xcconfig */,
+				A1BC18B37373A37D11B4BC37 /* Pods-ZipImageViewer.release.xcconfig */,
+				D7E842CE7513EFE8E63F1C87 /* Pods-ZipImageViewer-ZipImageViewerTests.debug.xcconfig */,
+				217D6ED7836EAA4C42F1D5A1 /* Pods-ZipImageViewer-ZipImageViewerTests.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		F2958A472CE0ACB2000CB3F9 = {
+			isa = PBXGroup;
+			children = (
+				F2958A522CE0ACB2000CB3F9 /* ZipImageViewer */,
+				F2958A692CE0ACB3000CB3F9 /* ZipImageViewerTests */,
+				F2958A732CE0ACB3000CB3F9 /* ZipImageViewerUITests */,
+				F2958A512CE0ACB2000CB3F9 /* Products */,
+				F2C07A052D000002000CB3F9 /* Archive fixtures */,
+				9C710FFD6209C3CC60AB4136 /* PrivacyInfo.xcprivacy */,
+				AA4B7531622333B246EC5876 /* Pods */,
+				9BD53A3282E1588BA38AD0E4 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		F2958A512CE0ACB2000CB3F9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F2958A502CE0ACB2000CB3F9 /* ZipImageViewer.app */,
+				F2958A662CE0ACB3000CB3F9 /* ZipImageViewerTests.xctest */,
+				F2958A702CE0ACB3000CB3F9 /* ZipImageViewerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F2958A4F2CE0ACB2000CB3F9 /* ZipImageViewer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F2958A792CE0ACB3000CB3F9 /* Build configuration list for PBXNativeTarget "ZipImageViewer" */;
+			buildPhases = (
+				A9D5F130D836CA02D269574D /* [CP] Check Pods Manifest.lock */,
+				F2958A4C2CE0ACB2000CB3F9 /* Sources */,
+				F2958A4D2CE0ACB2000CB3F9 /* Frameworks */,
+				F2958A4E2CE0ACB2000CB3F9 /* Resources */,
+				A98700000000000000000001 /* Bundle React Native */,
+				D9BC9FA85DFF6595B0BC0863 /* [CP] Embed Pods Frameworks */,
+				28E3C050148A467BF70CE55B /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F2958A522CE0ACB2000CB3F9 /* ZipImageViewer */,
+			);
+			name = ZipImageViewer;
+			packageProductDependencies = (
+				F2958A852CE0ADF0000CB3F9 /* ZipArchive */,
+				F2958A8C2CE0E484000CB3F9 /* ZIPFoundation */,
+				F2C07A022D000002000CB3F9 /* PLzmaSDK */,
+				F2C07A122D000002000CB3F9 /* JPEGXLBridge */,
+			);
+			productName = ZipImageViewer;
+			productReference = F2958A502CE0ACB2000CB3F9 /* ZipImageViewer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F2958A652CE0ACB3000CB3F9 /* ZipImageViewerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F2958A7E2CE0ACB3000CB3F9 /* Build configuration list for PBXNativeTarget "ZipImageViewerTests" */;
+			buildPhases = (
+				AD97E4CB76A2F853C7E4ECD8 /* [CP] Check Pods Manifest.lock */,
+				F2958A622CE0ACB3000CB3F9 /* Sources */,
+				F2958A632CE0ACB3000CB3F9 /* Frameworks */,
+				F2958A642CE0ACB3000CB3F9 /* Resources */,
+				4240454967D434FAD298E239 /* [CP] Embed Pods Frameworks */,
+				45541508275818FC1ADA88DB /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F2958A682CE0ACB3000CB3F9 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F2958A692CE0ACB3000CB3F9 /* ZipImageViewerTests */,
+			);
+			name = ZipImageViewerTests;
+			productName = ZipImageViewerTests;
+			productReference = F2958A662CE0ACB3000CB3F9 /* ZipImageViewerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F2958A6F2CE0ACB3000CB3F9 /* ZipImageViewerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F2958A812CE0ACB3000CB3F9 /* Build configuration list for PBXNativeTarget "ZipImageViewerUITests" */;
+			buildPhases = (
+				F2958A6C2CE0ACB3000CB3F9 /* Sources */,
+				F2958A6D2CE0ACB3000CB3F9 /* Frameworks */,
+				F2958A6E2CE0ACB3000CB3F9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F2958A722CE0ACB3000CB3F9 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F2958A732CE0ACB3000CB3F9 /* ZipImageViewerUITests */,
+			);
+			name = ZipImageViewerUITests;
+			productName = ZipImageViewerUITests;
+			productReference = F2958A702CE0ACB3000CB3F9 /* ZipImageViewerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F2958A482CE0ACB2000CB3F9 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1610;
+				LastUpgradeCheck = 1610;
+				TargetAttributes = {
+					F2958A4F2CE0ACB2000CB3F9 = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					F2958A652CE0ACB3000CB3F9 = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = F2958A4F2CE0ACB2000CB3F9;
+					};
+					F2958A6F2CE0ACB3000CB3F9 = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = F2958A4F2CE0ACB2000CB3F9;
+					};
+				};
+			};
+			buildConfigurationList = F2958A4B2CE0ACB2000CB3F9 /* Build configuration list for PBXProject "ZipImageViewer" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F2958A472CE0ACB2000CB3F9;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F2958A842CE0ADF0000CB3F9 /* XCRemoteSwiftPackageReference "ZipArchive" */,
+				F2958A8B2CE0E3CD000CB3F9 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				F2C07A032D000002000CB3F9 /* XCLocalSwiftPackageReference "PLzmaSDK" */,
+				F2C07A132D000002000CB3F9 /* XCLocalSwiftPackageReference "JPEGXL" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F2958A512CE0ACB2000CB3F9 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F2958A4F2CE0ACB2000CB3F9 /* ZipImageViewer */,
+				F2958A652CE0ACB3000CB3F9 /* ZipImageViewerTests */,
+				F2958A6F2CE0ACB3000CB3F9 /* ZipImageViewerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F2958A4E2CE0ACB2000CB3F9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0979C0AEA94C378F0477317E /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2958A642CE0ACB3000CB3F9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2958A6E2CE0ACB3000CB3F9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2C07A042D000002000CB3F9 /* Archive fixtures in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		28E3C050148A467BF70CE55B /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4240454967D434FAD298E239 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		45541508275818FC1ADA88DB /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer-ZipImageViewerTests/Pods-ZipImageViewer-ZipImageViewerTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A98700000000000000000001 /* Bundle React Native */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle React Native";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PROJECT_ROOT=\"$SRCROOT\"\nexport REACT_NATIVE_PATH=\"$SRCROOT/node_modules/react-native\"\nexport FORCE_BUNDLING=1\n/bin/sh \"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\" \"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n";
+		};
+		A9D5F130D836CA02D269574D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ZipImageViewer-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AD97E4CB76A2F853C7E4ECD8 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ZipImageViewer-ZipImageViewerTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D9BC9FA85DFF6595B0BC0863 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ZipImageViewer/Pods-ZipImageViewer-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F2958A4C2CE0ACB2000CB3F9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2958A622CE0ACB3000CB3F9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2958A6C2CE0ACB3000CB3F9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F2958A682CE0ACB3000CB3F9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F2958A4F2CE0ACB2000CB3F9 /* ZipImageViewer */;
+			targetProxy = F2958A672CE0ACB3000CB3F9 /* PBXContainerItemProxy */;
+		};
+		F2958A722CE0ACB3000CB3F9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F2958A4F2CE0ACB2000CB3F9 /* ZipImageViewer */;
+			targetProxy = F2958A712CE0ACB3000CB3F9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F2958A7A2CE0ACB3000CB3F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C840D7F781BF749DB95DBE28 /* Pods-ZipImageViewer.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "ZipImageViewer/Info-Debug.plist";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Yuanshine.ZipImageViewer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ZipImageViewer/ArchiveImport/ZipStreamingBridge.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F2958A7B2CE0ACB3000CB3F9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1BC18B37373A37D11B4BC37 /* Pods-ZipImageViewer.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZipImageViewer/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Yuanshine.ZipImageViewer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ZipImageViewer/ArchiveImport/ZipStreamingBridge.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F2958A7C2CE0ACB3000CB3F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
+				PODFILE_DIR = "$(SRCROOT)";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../node_modules/react-native";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				USE_HERMES = true;
+			};
+			name = Debug;
+		};
+		F2958A7D2CE0ACB3000CB3F9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
+				PODFILE_DIR = "$(SRCROOT)";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../node_modules/react-native";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				USE_HERMES = true;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F2958A7F2CE0ACB3000CB3F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D7E842CE7513EFE8E63F1C87 /* Pods-ZipImageViewer-ZipImageViewerTests.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Yuanshine.ZipImageViewerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZipImageViewer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ZipImageViewer";
+			};
+			name = Debug;
+		};
+		F2958A802CE0ACB3000CB3F9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 217D6ED7836EAA4C42F1D5A1 /* Pods-ZipImageViewer-ZipImageViewerTests.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Yuanshine.ZipImageViewerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZipImageViewer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ZipImageViewer";
+			};
+			name = Release;
+		};
+		F2958A822CE0ACB3000CB3F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Yuanshine.ZipImageViewerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ZipImageViewer;
+			};
+			name = Debug;
+		};
+		F2958A832CE0ACB3000CB3F9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Yuanshine.ZipImageViewerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ZipImageViewer;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F2958A4B2CE0ACB2000CB3F9 /* Build configuration list for PBXProject "ZipImageViewer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2958A7C2CE0ACB3000CB3F9 /* Debug */,
+				F2958A7D2CE0ACB3000CB3F9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F2958A792CE0ACB3000CB3F9 /* Build configuration list for PBXNativeTarget "ZipImageViewer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2958A7A2CE0ACB3000CB3F9 /* Debug */,
+				F2958A7B2CE0ACB3000CB3F9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F2958A7E2CE0ACB3000CB3F9 /* Build configuration list for PBXNativeTarget "ZipImageViewerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2958A7F2CE0ACB3000CB3F9 /* Debug */,
+				F2958A802CE0ACB3000CB3F9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F2958A812CE0ACB3000CB3F9 /* Build configuration list for PBXNativeTarget "ZipImageViewerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2958A822CE0ACB3000CB3F9 /* Debug */,
+				F2958A832CE0ACB3000CB3F9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F2C07A032D000002000CB3F9 /* XCLocalSwiftPackageReference "PLzmaSDK" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/PLzmaSDK;
+		};
+		F2C07A132D000002000CB3F9 /* XCLocalSwiftPackageReference "JPEGXL" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/JPEGXL;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F2958A842CE0ADF0000CB3F9 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ZipArchive/ZipArchive";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+		F2958A8B2CE0E3CD000CB3F9 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F2958A852CE0ADF0000CB3F9 /* ZipArchive */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2958A842CE0ADF0000CB3F9 /* XCRemoteSwiftPackageReference "ZipArchive" */;
+			productName = ZipArchive;
+		};
+		F2958A8C2CE0E484000CB3F9 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2958A8B2CE0E3CD000CB3F9 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+		F2C07A022D000002000CB3F9 /* PLzmaSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C07A032D000002000CB3F9 /* XCLocalSwiftPackageReference "PLzmaSDK" */;
+			productName = PLzmaSDK;
+		};
+		F2C07A122D000002000CB3F9 /* JPEGXLBridge */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C07A132D000002000CB3F9 /* XCLocalSwiftPackageReference "JPEGXL" */;
+			productName = JPEGXLBridge;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F2958A482CE0ACB2000CB3F9 /* Project object */;
+}

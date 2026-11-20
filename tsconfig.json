@@ -1,0 +1,6 @@
+{
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {"strict": true, "types": ["jest"], "noUncheckedIndexedAccess": true},
+  "include": ["App.tsx", "mobile/**/*.ts", "mobile/**/*.tsx"],
+  "exclude": ["node_modules", "work"]
+}
